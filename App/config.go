@@ -61,5 +61,5 @@ func (c Config) Save(vault_location OSPath) error {
 		return err
 	}
 
-	return os.WriteFile(configpath, bs, 0)
+	return os.WriteFile(configpath, bs, 0644)
 }
