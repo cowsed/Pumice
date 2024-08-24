@@ -1,58 +1,92 @@
 package main
 
 import (
-	"image/color"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
 	"log"
+	"log/slog"
 	"os"
+	"path"
 
-	"gioui.org/app"
-	"gioui.org/op"
-	"gioui.org/text"
-	"gioui.org/widget/material"
+	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/widget"
+	"github.com/sqweek/dialog"
 )
 
-func main() {
-	go func() {
-		window := new(app.Window)
-		err := run(window)
-		if err != nil {
-			log.Fatal(err)
-		}
-		os.Exit(0)
-	}()
-	app.Main()
+var AppConfigDir = "pumice"
+
+func LoadConfig() AppConfig {
+	appcfg_path := path.Join(AppConfigDir, "app.json")
+	file, err := os.Open(appcfg_path)
+	var cfg AppConfig = DefaultAppConfig
+
+	if os.IsNotExist(err) {
+		slog.Warn("Can not find app config. Using defaults...")
+		cfg.Save(appcfg_path)
+		return cfg
+	} else if err != nil {
+		slog.Error("Error openning config file. Using defaults...", "err", err)
+		return cfg
+	}
+
+	bs, err := io.ReadAll(file)
+	if err != nil {
+		slog.Error("Error reading app config file. Using defaults...", "err", err)
+		return cfg
+	}
+
+	err = json.Unmarshal(bs, &cfg)
+	if err != nil {
+		slog.Error("Failed to parse app config file. Using defaults...", "err", err)
+		return cfg
+	}
+
+	return cfg
 }
 
+type Notification struct {
+	Message string
+}
 
-func run(window *app.Window) error {
-	theme := material.NewTheme()
-	var ops op.Ops
-	for {
-		switch e := window.Event().(type) {
-		case app.DestroyEvent:
-			return e.Err
-		case app.FrameEvent:
-			// This graphics context is used for managing the rendering state.
-			gtx := app.NewContext(&ops, e)
-
-			// Define an large label with an appropriate text:
-			title := material.H1(theme, "Hello, Gio")
-			title2 := material.H2(theme, "sup")
-
-			// Change the color of the label.
-			maroon := color.NRGBA{R: 127, G: 0, B: 0, A: 255}
-			title.Color = maroon
-
-			// Change the position of the label.
-			title.Alignment = text.Middle
-
-			// Draw the label to the graphics context.
-			title.Layout(gtx)
-			title2.Layout(gtx)
-
-			// Pass the drawing operations to the GPU.
-			e.Frame(gtx.Ops)
-
-		}
+func notificationHandler(queue chan Notification) {
+	for elem := range queue {
+		slog.Info("Notification", "noti", elem)
 	}
+}
+
+func main() {
+	noti_chan := make(chan Notification)
+	go notificationHandler(noti_chan)
+
+	cfg := LoadConfig()
+	fmt.Println(cfg)
+
+	myApp := app.New()
+	myWindow := myApp.NewWindow("Entry Widget")
+
+	content := container.NewVBox(
+		widget.NewButton("Open Vault", func() { LoadVaultToImport(noti_chan) }),
+	)
+
+	myWindow.SetContent(content)
+	myWindow.ShowAndRun()
+}
+
+func LoadVaultToImport(notis chan Notification) {
+	filename, err := dialog.Directory().Title("Open a Vault").Browse()
+	if errors.Is(err, dialog.ErrCancelled) {
+		slog.Info("Vault import cancelled. File picker closed")
+		return
+	} else if err != nil {
+		slog.Error("Vault import failed. File picker error. ", "err", err)
+		notis <- Notification{
+			Message: "Failed to open vault: " + err.Error(),
+		}
+		return
+	}
+	log.Println(filename)
+
 }
