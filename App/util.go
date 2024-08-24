@@ -1,6 +1,9 @@
 package main
 
-import "path"
+import (
+	"fmt"
+	"path"
+)
 
 type OSPath string
 type VaultLocation string
@@ -17,6 +20,10 @@ type Version struct {
 	minor   int
 	patch   int
 	comment string
+}
+
+func (v Version) String() string {
+	return fmt.Sprintf("%d.%d.%d-%s", v.major, v.minor, v.patch, v.comment)
 }
 
 func ToOSPath(vault OSPath, loc VaultLocation) string {

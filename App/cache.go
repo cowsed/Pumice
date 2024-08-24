@@ -20,17 +20,9 @@ type NoteCache struct {
 	notepath VaultLocation
 }
 
-type NoCache struct {
-	err error
-}
-
-func (nc NoCache) Error() string {
-	return "No Cache Found: " + nc.err.Error()
-}
-
 func loadWorkspaceCache(vault_location OSPath) (*VaultCache, error) {
 	var cache_folder OSPath = OSPath(ToOSPath(vault_location, cacheFolderName))
-	err := os.MkdirAll(string(cache_folder), 0644)
+	err := os.MkdirAll(string(cache_folder), 0777)
 	if err != nil {
 		return nil, err
 	}
@@ -40,12 +32,12 @@ func loadWorkspaceCache(vault_location OSPath) (*VaultCache, error) {
 
 	f, err := os.Open(cachepath)
 	if err != nil {
-		return nil, NoCache{err}
+		return nil, err
 	}
 
 	bs, err := io.ReadAll(f)
 	if err != nil {
-		return nil, NoCache{err}
+		return nil, err
 	}
 
 	dc := VaultCache{
@@ -55,7 +47,7 @@ func loadWorkspaceCache(vault_location OSPath) (*VaultCache, error) {
 
 	err = json.Unmarshal(bs, &dc)
 	if err != nil {
-		return nil, NoCache{err}
+		return nil, err
 	}
 
 	return &VaultCache{}, nil

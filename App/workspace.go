@@ -1,81 +1,75 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
-	"io"
-	"os"
+	"log"
+	"log/slog"
+	"time"
 )
 
-var configFolderName VaultLocation = ".config"
-var configFilename string = "config.json"
-var configFilePath VaultLocation = configFolderName.Append(configFilename)
+type BackendState int
 
-func (v Version) String() string {
-	return fmt.Sprintf("%d.%d.%d-%s", v.major, v.minor, v.patch, v.comment)
+const (
+	Opening BackendState = iota
+	LoadingConfig
+	LoadingCache
+	BuildingCache
+	Ready
+	Error
+)
+
+type BackendUpdate struct {
+	state   BackendState
+	message string
+	err     error
 }
 
-type NoConfig struct {
-	err error
+func LoadWorkspace(flags Flags) chan BackendUpdate {
+	updateChan := make(chan BackendUpdate, 5)
+	updateChan <- BackendUpdate{
+		state:   Opening,
+		message: "Opening",
+		err:     nil,
+	}
+
+	go loadWorkspace(flags, updateChan)
+
+	return updateChan
 }
+func loadWorkspace(flags Flags, updates chan BackendUpdate) {
+	time.Sleep(1 * time.Second)
 
-func (nc NoConfig) Error() string {
-	return "Unable to load config: " + nc.err.Error()
-}
+	updates <- BackendUpdate{
+		state:   LoadingConfig,
+		message: "Loading Config",
+		err:     nil,
+	}
+	time.Sleep(1 * time.Second)
 
-func loadWorkspaceConfig(vault_path OSPath) (Config, error) {
-	path := ToOSPath(vault_path, configFilePath)
-	default_cfg := NewConfig()
-
-	f, err := os.Open(path)
+	cfg, err := loadWorkspaceConfig(flags.VaultPath)
 	if err != nil {
-		return default_cfg, NoConfig{err}
+		slog.Error("Unable to load workspace config, using default...", "err", err)
+		err = cfg.Save(flags.VaultPath)
+		if err != nil {
+			slog.Error("Couldn't write default config", "err", err)
+		}
 	}
+	updates <- BackendUpdate{
+		state:   LoadingCache,
+		message: "Loading Cache",
+		err:     nil,
+	}
+	time.Sleep(1 * time.Second)
 
-	bs, err := io.ReadAll(f)
+	dc, err := loadWorkspaceCache(flags.VaultPath)
 	if err != nil {
-		return default_cfg, NoConfig{err}
+		slog.Warn("Failed to load cache, rebuilding...", "err", err)
+	}
+	log.Println("Cache", dc)
+
+	updates <- BackendUpdate{
+		state:   Ready,
+		message: "Done",
+		err:     nil,
 	}
 
-	cfg := Config{}
-
-	err = json.Unmarshal(bs, &cfg)
-	if err != nil {
-		return default_cfg, NoConfig{err}
-	}
-
-	return cfg, nil
-}
-
-func NewConfig() Config {
-	return Config{
-		Themes:       []Theme{},
-		CurrentTheme: "builtin",
-		// extensions: []Extension{}
-	}
-}
-
-type Config struct {
-	Themes       []Theme `json:"theme`
-	CurrentTheme ThemeID `json:"current_theme`
-}
-
-func (c Config) Save(vault_location OSPath) error {
-	var config_folder OSPath = OSPath(ToOSPath(vault_location, configFolderName))
-	err := os.MkdirAll(string(config_folder), 0644)
-
-	if err != nil {
-		return err
-	}
-
-	bs, err := json.Marshal(c)
-	if err != nil {
-		return err
-	}
-	return os.WriteFile(string(vault_location), bs, 0644)
-}
-
-type ThemeID string
-type Theme struct {
-	name string
 }

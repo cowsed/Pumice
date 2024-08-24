@@ -1,50 +1,38 @@
 package main
 
 import (
-	"image/color"
 	"log"
 	"log/slog"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
-	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 )
+
+func doUI(update chan BackendUpdate, win fyne.Window) {
+	label := widget.NewLabel("Openning...")
+	progress := widget.NewProgressBarInfinite()
+	progress.Start()
+
+	win.SetContent(container.NewVBox(label, progress))
+	for update := range update {
+		label.SetText(update.message)
+	}
+}
 
 func main() {
 	flags := parseFlags()
 	slog.Info("Loaded flags", "flags", flags)
 
-	cfg, err := loadWorkspaceConfig(flags.VaultPath)
-	if err != nil {
-		slog.Error("Unable to load workspace config, using default...", "err", err)
-		cfg.Save(flags.VaultPath)
-	}
-	log.Println(cfg)
+	updates := LoadWorkspace(flags)
+	log.Println(updates)
 
-	dc, err := loadWorkspaceCache(flags.VaultPath)
-	if err != nil {
-		slog.Warn("Failed to load cache, rebuilding", "err", err)
-	}
-
-	log.Println("dc", dc)
-
-	return
 	myApp := app.New()
-	myWindow := myApp.NewWindow("Entry Widget")
+	win := myApp.NewWindow("Pumice")
 
-	title := canvas.NewText("Pumice", color.Black)
-	title.TextSize = 18
-	title.Alignment = fyne.TextAlignCenter
+	go doUI(updates, win)
 
-	content := container.NewVBox(
-		title,
-		widget.NewSeparator(),
-		widget.NewButton("Open Vault", func() {}),
-	)
-
-	myWindow.SetContent(content)
-	myWindow.ShowAndRun()
+	win.ShowAndRun()
 
 }
