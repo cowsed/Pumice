@@ -4,19 +4,22 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"image/color"
 	"io"
 	"log"
 	"log/slog"
 	"os"
 	"path"
 
+	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 	"github.com/sqweek/dialog"
 )
 
-var AppConfigDir = "pumice"
+var AppConfigDir = "config"
 
 func LoadConfig() AppConfig {
 	appcfg_path := path.Join(AppConfigDir, "app.json")
@@ -58,27 +61,42 @@ func notificationHandler(queue chan Notification) {
 }
 
 func main() {
-	noti_chan := make(chan Notification)
-	go notificationHandler(noti_chan)
-
 	cfg := LoadConfig()
 	fmt.Println(cfg)
+
+	if len(cfg.OpenVaults) == 0 {
+		ShowVaultOpener()
+	}
+
+}
+
+func ShowVaultOpener() {
+	noti_chan := make(chan Notification)
+	go notificationHandler(noti_chan)
 
 	myApp := app.New()
 	myWindow := myApp.NewWindow("Entry Widget")
 
+	title := canvas.NewText("Pumice", color.Black)
+	title.TextSize = 18
+	title.Alignment = fyne.TextAlignCenter
+
 	content := container.NewVBox(
-		widget.NewButton("Open Vault", func() { LoadVaultToImport(noti_chan) }),
+		title,
+		widget.NewSeparator(),
+		widget.NewButton("Open Vault", func() { LoadVaultToImport(noti_chan, myWindow) }),
 	)
 
 	myWindow.SetContent(content)
 	myWindow.ShowAndRun()
+
 }
 
-func LoadVaultToImport(notis chan Notification) {
-	filename, err := dialog.Directory().Title("Open a Vault").Browse()
+func LoadVaultToImport(notis chan Notification, window fyne.Window) {
+	filename, err := PickVaultToImport(notis)
+
 	if errors.Is(err, dialog.ErrCancelled) {
-		slog.Info("Vault import cancelled. File picker closed")
+		slog.Debug("Vault import cancelled. File picker closed")
 		return
 	} else if err != nil {
 		slog.Error("Vault import failed. File picker error. ", "err", err)
@@ -88,5 +106,14 @@ func LoadVaultToImport(notis chan Notification) {
 		return
 	}
 	log.Println(filename)
+	window.Close()
 
+}
+
+func PickVaultToImport(notis chan Notification) (string, error) {
+	filename, err := dialog.Directory().Title("Open a Vault").Browse()
+	if err != nil {
+		return "", err
+	}
+	return filename, nil
 }

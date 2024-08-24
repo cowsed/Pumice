@@ -36,8 +36,8 @@ jobs:
       with:
         go-version: '1.23'
 
-    - name: Build
-      run: go build -v ./...
+    - name: Build Launcher
+      run: go build -o launcher -v ./Launcer/
 
-    - name: Test
-      run: go test -v ./...
+    - name: Test Launcher
+      run: go test -v ./Launcher
