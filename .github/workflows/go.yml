@@ -16,6 +16,19 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Get dependencies
+      run: >-
+        sudo apt-get update &&
+        sudo apt-get install
+        bc
+        gcc
+        libgl1-mesa-dev
+        libwayland-dev
+        libx11-dev
+        libxkbcommon-dev
+        xorg-dev
+        xvfb
+      if: ${{ runner.os == 'Linux' }}
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
