@@ -3,6 +3,7 @@ package main
 import (
 	mathjax "github.com/litao91/goldmark-mathjax"
 	"github.com/yuin/goldmark"
+	emoji "github.com/yuin/goldmark-emoji"
 	meta "github.com/yuin/goldmark-meta"
 	"github.com/yuin/goldmark/extension"
 	"github.com/yuin/goldmark/parser"
@@ -13,7 +14,14 @@ import (
 
 func Parser() parser.Parser {
 	md := goldmark.New(
-		goldmark.WithExtensions(extension.GFM, meta.Meta, mathjax.MathJax, &wikilink.Extender{}, &hashtag.Extender{}),
+		goldmark.WithExtensions(
+			extension.GFM,
+			meta.Meta,
+			mathjax.MathJax,
+			&wikilink.Extender{},
+			&hashtag.Extender{},
+			emoji.Emoji,
+		),
 		goldmark.WithParserOptions(
 			parser.WithAutoHeadingID(),
 		),

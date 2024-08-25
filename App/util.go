@@ -29,6 +29,9 @@ func (v Version) String() string {
 func ToOSPath(vault OSPath, loc VaultLocation) string {
 	return path.Join(string(vault), string(loc))
 }
+func (op OSPath) Base() string {
+	return path.Base(string(op))
+}
 
 func (vl VaultLocation) Append(file string) VaultLocation {
 	return VaultLocation(path.Join(string(vl), file))

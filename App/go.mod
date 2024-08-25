@@ -6,6 +6,7 @@ require (
 	fyne.io/fyne/v2 v2.5.1
 	github.com/litao91/goldmark-mathjax v0.0.0-20210217064022-a43cf739a50f
 	github.com/yuin/goldmark v1.7.1
+	github.com/yuin/goldmark-emoji v1.0.3
 	github.com/yuin/goldmark-meta v1.1.0
 	go.abhg.dev/goldmark/hashtag v0.3.1
 	go.abhg.dev/goldmark/wikilink v0.5.0

@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"log/slog"
-	"time"
 )
 
 type BackendState int
@@ -11,40 +10,36 @@ type BackendState int
 const (
 	Opening BackendState = iota
 	LoadingConfig
+	LoadingThemes
+	LoadingExtensions
 	LoadingCache
 	BuildingCache
 	Ready
 	Error
 )
 
-type BackendUpdate struct {
-	state   BackendState
-	message string
-	err     error
+type BackendUpdate interface {
+	Describe() string
+}
+
+var _ BackendUpdate = ConfigLoaded{}
+
+type ConfigLoaded struct {
+	config Config
+}
+
+func (cl ConfigLoaded) Describe() string {
+	return "Loaded Configuration"
 }
 
 func LoadWorkspace(flags Flags) chan BackendUpdate {
 	updateChan := make(chan BackendUpdate, 5)
-	updateChan <- BackendUpdate{
-		state:   Opening,
-		message: "Opening",
-		err:     nil,
-	}
 
 	go loadWorkspace(flags, updateChan)
 
 	return updateChan
 }
 func loadWorkspace(flags Flags, updates chan BackendUpdate) {
-	time.Sleep(1 * time.Second)
-
-	updates <- BackendUpdate{
-		state:   LoadingConfig,
-		message: "Loading Config",
-		err:     nil,
-	}
-	time.Sleep(1 * time.Second)
-
 	cfg, err := loadWorkspaceConfig(flags.VaultPath)
 	if err != nil {
 		slog.Error("Unable to load workspace config, using default...", "err", err)
@@ -53,23 +48,15 @@ func loadWorkspace(flags Flags, updates chan BackendUpdate) {
 			slog.Error("Couldn't write default config", "err", err)
 		}
 	}
-	updates <- BackendUpdate{
-		state:   LoadingCache,
-		message: "Loading Cache",
-		err:     nil,
+
+	updates <- ConfigLoaded{
+		config: cfg,
 	}
-	time.Sleep(1 * time.Second)
 
 	dc, err := loadWorkspaceCache(flags.VaultPath)
 	if err != nil {
 		slog.Warn("Failed to load cache, rebuilding...", "err", err)
 	}
 	log.Println("Cache", dc)
-
-	updates <- BackendUpdate{
-		state:   Ready,
-		message: "Done",
-		err:     nil,
-	}
 
 }

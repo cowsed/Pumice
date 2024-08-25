@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"io"
 	"os"
+
+	"fyne.io/fyne/v2"
 )
 
 var configFolderName VaultLocation = ".config"
@@ -38,13 +40,15 @@ func NewConfig() Config {
 	return Config{
 		Themes:       []Theme{},
 		CurrentTheme: "builtin",
+		WindowSize:   fyne.NewSize(400, 300),
 		// extensions: []Extension{}
 	}
 }
 
 type Config struct {
-	Themes       []Theme `json:"theme`
-	CurrentTheme ThemeID `json:"current_theme`
+	Themes       []Theme   `json:"theme`
+	CurrentTheme ThemeID   `json:"current_theme`
+	WindowSize   fyne.Size `json:"size"`
 }
 
 func (c Config) Save(vault_location OSPath) error {

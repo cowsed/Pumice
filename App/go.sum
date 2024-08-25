@@ -291,6 +291,8 @@ github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1
 github.com/yuin/goldmark v1.4.0/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=
 github.com/yuin/goldmark v1.7.1 h1:3bajkSilaCbjdKVsKdZjZCLBNPL9pYzrCakKaf4U49U=
 github.com/yuin/goldmark v1.7.1/go.mod h1:uzxRWxtg69N339t3louHJ7+O03ezfj6PlliRlaOzY1E=
+github.com/yuin/goldmark-emoji v1.0.3 h1:aLRkLHOuBR2czCY4R8olwMjID+tENfhyFDMCRhbIQY4=
+github.com/yuin/goldmark-emoji v1.0.3/go.mod h1:tTkZEbwu5wkPmgTcitqddVxY9osFZiavD+r4AzQrh1U=
 github.com/yuin/goldmark-meta v1.1.0 h1:pWw+JLHGZe8Rk0EGsMVssiNb/AaPMHfSRszZeUeiOUc=
 github.com/yuin/goldmark-meta v1.1.0/go.mod h1:U4spWENafuA7Zyg+Lj5RqK/MF+ovMYtBvXi1lBb2VP0=
 go.abhg.dev/goldmark/hashtag v0.3.1 h1:k0FQwEtVQ1SstIRR2fqDJ4VNYUS0AXLp869V0qHOZMg=
