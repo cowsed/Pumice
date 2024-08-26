@@ -12,14 +12,17 @@ import (
 	"go.abhg.dev/goldmark/wikilink"
 )
 
-func Parser() parser.Parser {
+func VaultParser() parser.Parser {
 	md := goldmark.New(
 		goldmark.WithExtensions(
 			extension.GFM,
-			meta.Meta,
+			meta.New(meta.WithStoresInDocument()),
 			mathjax.MathJax,
 			&wikilink.Extender{},
-			&hashtag.Extender{},
+			&hashtag.Extender{
+				Resolver: nil,
+				Variant:  hashtag.ObsidianVariant,
+			},
 			emoji.Emoji,
 		),
 		goldmark.WithParserOptions(

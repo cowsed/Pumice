@@ -46,8 +46,8 @@ func NewConfig() Config {
 }
 
 type Config struct {
-	Themes       []Theme   `json:"theme`
-	CurrentTheme ThemeID   `json:"current_theme`
+	Themes       []Theme   `json:"theme"`
+	CurrentTheme ThemeID   `json:"current_theme"`
 	WindowSize   fyne.Size `json:"size"`
 }
 

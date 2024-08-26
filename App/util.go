@@ -36,3 +36,34 @@ func (op OSPath) Base() string {
 func (vl VaultLocation) Append(file string) VaultLocation {
 	return VaultLocation(path.Join(string(vl), file))
 }
+
+type TagSet struct {
+	internal map[Tag]struct{}
+}
+
+func (ts TagSet) String() string {
+	return fmt.Sprint(ts.internal)
+}
+func (ts TagSet) List() []Tag {
+	keys := make([]Tag, 0, len(ts.internal))
+	for k := range ts.internal {
+		keys = append(keys, k)
+	}
+	return keys
+}
+
+func (ts TagSet) Contains(t Tag) bool {
+	_, contains := ts.internal[t]
+	return contains
+}
+
+func (ts TagSet) Len() int { return len(ts.internal) }
+
+func NewTagSet() TagSet {
+	return TagSet{
+		internal: map[Tag]struct{}{},
+	}
+}
+func (ts *TagSet) Add(tag Tag) {
+	ts.internal[tag] = struct{}{}
+}
