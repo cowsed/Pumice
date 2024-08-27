@@ -1,4 +1,4 @@
-package main
+package parser
 
 import (
 	mathjax "github.com/litao91/goldmark-mathjax"

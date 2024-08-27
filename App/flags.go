@@ -4,10 +4,12 @@ import (
 	"flag"
 	"fmt"
 	"os"
+
+	"github.com/cowsed/Pumice/App/data"
 )
 
 type Flags struct {
-	VaultPath OSPath
+	VaultPath data.OSPath
 }
 
 func parseFlags() Flags {
@@ -19,6 +21,6 @@ func parseFlags() Flags {
 		os.Exit(1)
 	}
 	return Flags{
-		VaultPath: OSPath(args[0]),
+		VaultPath: data.OSPath(args[0]),
 	}
 }

@@ -1,23 +1,18 @@
-package main
+package data
 
 import (
-	"encoding/json"
-	"io"
-	"log/slog"
-	"os"
+	"fmt"
 
+	"github.com/cowsed/Pumice/App/config"
+	"github.com/cowsed/Pumice/App/parser"
 	"github.com/yuin/goldmark/ast"
 	"github.com/yuin/goldmark/text"
 	"go.abhg.dev/goldmark/hashtag"
 )
 
-var cacheFolderName VaultLocation = ".cache"
-var dataCacheFilename string = "data.json"
-var dataCachePath VaultLocation = cacheFolderName.Append(dataCacheFilename)
-
 type VaultCache struct {
-	Version Version     `json:"version"`
-	Notes   []NoteCache `json:"notes"`
+	Version config.Version `json:"version"`
+	Notes   []NoteCache    `json:"notes"`
 }
 
 type NoteCache struct {
@@ -70,11 +65,24 @@ func GetTags(doc ast.Node) TagSet {
 	return tags
 }
 
-func MakeNoteCache(bytes []byte) (NoteCache, ast.Node, error) {
+type PannicedErr struct {
+	err any
+}
 
-	doc := VaultParser().Parse(text.NewReader(bytes))
+func (pe PannicedErr) Error() string {
+	return fmt.Sprintf("error recovered: %+v", pe.err)
+}
 
-	nc := NoteCache{
+func MakeNoteCache(bytes []byte) (cache NoteCache, doc ast.Node, err error) {
+	// defer func() {
+	// if r := recover(); r != nil {
+	// err = PannicedErr{r}
+	// }
+	// }()
+
+	doc = parser.VaultParser().Parse(text.NewReader(bytes))
+
+	cache = NoteCache{
 		tags:     GetTags(doc),
 		outlinks: "",
 		metadata: map[string]MetaDataValue{},
@@ -82,46 +90,13 @@ func MakeNoteCache(bytes []byte) (NoteCache, ast.Node, error) {
 
 	// List the tags.
 
-	return nc, doc, nil
+	return cache, doc, nil
 }
 
 type MetaDataValue interface{}
 
 type Link string
 type Tag string
-
-func loadWorkspaceCache(vault_location OSPath) (*VaultCache, error) {
-	var cache_folder OSPath = OSPath(ToOSPath(vault_location, cacheFolderName))
-	err := os.MkdirAll(string(cache_folder), 0777)
-	if err != nil {
-		return nil, err
-	}
-
-	cachepath := ToOSPath(vault_location, dataCachePath)
-	slog.Info("Trying to load cache", "cachepath", cachepath)
-
-	f, err := os.Open(cachepath)
-	if err != nil {
-		return nil, err
-	}
-
-	bs, err := io.ReadAll(f)
-	if err != nil {
-		return nil, err
-	}
-
-	dc := VaultCache{
-		Version: CURRENT_VERSION,
-		Notes:   []NoteCache{},
-	}
-
-	err = json.Unmarshal(bs, &dc)
-	if err != nil {
-		return nil, err
-	}
-
-	return &VaultCache{}, nil
-}
 
 type CacheBuildStatus struct {
 	currentFile VaultLocation

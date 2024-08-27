@@ -6,14 +6,15 @@ import (
 	"os"
 
 	"fyne.io/fyne/v2"
+	"github.com/cowsed/Pumice/App/data"
 )
 
-var configFolderName VaultLocation = ".config"
+var configFolderName data.VaultLocation = ".config"
 var configFilename string = "config.json"
-var configFilePath VaultLocation = configFolderName.Append(configFilename)
+var configFilePath data.VaultLocation = configFolderName.Append(configFilename)
 
-func loadWorkspaceConfig(vault_path OSPath) (Config, error) {
-	path := ToOSPath(vault_path, configFilePath)
+func loadWorkspaceConfig(vault_path data.OSPath) (Config, error) {
+	path := data.ToOSPath(vault_path, configFilePath)
 	default_cfg := NewConfig()
 
 	f, err := os.Open(path)
@@ -51,14 +52,14 @@ type Config struct {
 	WindowSize   fyne.Size `json:"size"`
 }
 
-func (c Config) Save(vault_location OSPath) error {
-	var config_folder OSPath = OSPath(ToOSPath(vault_location, configFolderName))
+func (c Config) Save(vault_location data.OSPath) error {
+	var config_folder data.OSPath = data.OSPath(data.ToOSPath(vault_location, configFolderName))
 	err := os.MkdirAll(string(config_folder), 0777)
 	if err != nil {
 		return err
 	}
 
-	configpath := ToOSPath(vault_location, configFilePath)
+	configpath := data.ToOSPath(vault_location, configFilePath)
 
 	bs, err := json.Marshal(c)
 	if err != nil {
