@@ -148,7 +148,7 @@ func main() {
 	count := 0
 	for ent := range out {
 		count++
-		if count == len(mds)-1 {
+		if count == len(mds) {
 			close(out)
 		}
 		if ent.err != nil {
