@@ -8,6 +8,8 @@ import (
 	"log/slog"
 	"os"
 	"path"
+	"slices"
+	"strings"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -156,6 +158,21 @@ func main() {
 			continue
 		}
 		caches = append(caches, ent)
+	}
+
+	ts := data.NewTagSet()
+	for _, ce := range caches {
+		for _, tag := range ce.cache.Tags.List() {
+			ts.Add(tag)
+		}
+	}
+
+	l := ts.List()
+	slices.SortFunc(l, func(a, b data.Tag) int {
+		return strings.Compare(string(a), string(b))
+	})
+	for _, t := range l {
+		fmt.Println(t)
 	}
 
 	log.Printf("Read %v of %v files", len(caches), len(mds))

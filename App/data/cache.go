@@ -16,9 +16,9 @@ type VaultCache struct {
 }
 
 type NoteCache struct {
-	tags     TagSet
-	outlinks Link
-	metadata map[string]MetaDataValue
+	Tags     TagSet
+	Outlinks Link
+	Metadata map[string]MetaDataValue
 }
 
 type FullPath struct {
@@ -83,9 +83,9 @@ func MakeNoteCache(bytes []byte) (cache NoteCache, doc ast.Node, err error) {
 	doc = parser.VaultParser().Parse(text.NewReader(bytes))
 
 	cache = NoteCache{
-		tags:     GetTags(doc),
-		outlinks: "",
-		metadata: map[string]MetaDataValue{},
+		Tags:     GetTags(doc),
+		Outlinks: "",
+		Metadata: map[string]MetaDataValue{},
 	}
 
 	// List the tags.

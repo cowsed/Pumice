@@ -109,20 +109,20 @@ tags:
 }
 
 func assertTagsMatch(t *testing.T, expected []Tag, cache NoteCache) {
-	if len(expected) != cache.tags.Len() {
-		t.Errorf("Tag Mismatch: Expected %v, got %v", expected, cache.tags)
+	if len(expected) != cache.Tags.Len() {
+		t.Errorf("Tag Mismatch: Expected %v, got %v", expected, cache.Tags)
 		return
 	}
 
 	failed := false
 
 	for _, tag := range expected {
-		if !cache.tags.Contains(tag) {
+		if !cache.Tags.Contains(tag) {
 			t.Errorf("Expected but could not find tag '%v'", tag)
 			failed = true
 		}
 	}
 	if failed {
-		t.Logf("Got %v", cache.tags)
+		t.Logf("Got %v", cache.Tags)
 	}
 }
