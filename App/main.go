@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/fs"
@@ -8,8 +9,6 @@ import (
 	"log/slog"
 	"os"
 	"path"
-	"slices"
-	"strings"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -98,12 +97,12 @@ func readFiles(filesys fs.FS, in chan string, out chan CacheEntry) {
 		}
 
 		// Parse File
-		cache, _, err := data.MakeNoteCache(bs)
+		cache, _, err := data.MakeNoteCache(data.VaultLocation(path), bs)
 		if err != nil {
 			out <- NewCacheEntryErr(path, err)
 			continue
 		}
-		// log.Println(i, "Im looking at", path)
+		log.Println(i, "Im looking at", path)
 		out <- CacheEntry{
 			path:  path,
 			err:   nil,
@@ -160,22 +159,17 @@ func main() {
 		caches = append(caches, ent)
 	}
 
-	ts := data.NewTagSet()
-	for _, ce := range caches {
-		for _, tag := range ce.cache.Tags.List() {
-			ts.Add(tag)
-		}
-	}
-
-	l := ts.List()
-	slices.SortFunc(l, func(a, b data.Tag) int {
-		return strings.Compare(string(a), string(b))
-	})
-	for _, t := range l {
-		fmt.Println(t)
+	values := []data.NoteCache{}
+	for _, v := range caches {
+		values = append(values, v.cache)
 	}
 
 	log.Printf("Read %v of %v files", len(caches), len(mds))
+	bs, err := json.MarshalIndent(values, "", "  ")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(string(bs))
 
 	// myApp := app.New()
 

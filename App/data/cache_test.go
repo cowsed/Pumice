@@ -15,7 +15,7 @@ func TestTagParse(t *testing.T) {
 #tag1
 #tag2/subtag
 	`
-	cache, _, err := MakeNoteCache([]byte(src))
+	cache, _, err := MakeNoteCache("Note.md", []byte(src))
 	if err != nil {
 		t.Error("Failed to parse source", err)
 		return
@@ -37,7 +37,7 @@ tags:
   - tag2
 ---`
 
-	cache, _, err := MakeNoteCache([]byte(src))
+	cache, _, err := MakeNoteCache("Note.md", []byte(src))
 	if err != nil {
 		t.Error("Failed to parse source", err)
 		return
@@ -64,7 +64,7 @@ tags:
 
 `
 
-	cache, _, err := MakeNoteCache([]byte(src))
+	cache, _, err := MakeNoteCache("Note.md", []byte(src))
 	if err != nil {
 		t.Error("Failed to parse source", err)
 		return
@@ -98,7 +98,7 @@ tags:
 		"yes-a-tag",
 	}
 
-	cache, _, err := MakeNoteCache([]byte(src))
+	cache, _, err := MakeNoteCache("Note.md", []byte(src))
 	if err != nil {
 		t.Error("Failed to parse source", err)
 		return

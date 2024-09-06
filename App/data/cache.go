@@ -16,6 +16,7 @@ type VaultCache struct {
 }
 
 type NoteCache struct {
+	Path     VaultLocation
 	Tags     TagSet
 	Outlinks Link
 	Metadata map[string]MetaDataValue
@@ -73,7 +74,7 @@ func (pe PannicedErr) Error() string {
 	return fmt.Sprintf("error recovered: %+v", pe.err)
 }
 
-func MakeNoteCache(bytes []byte) (cache NoteCache, doc ast.Node, err error) {
+func MakeNoteCache(path VaultLocation, bytes []byte) (cache NoteCache, doc ast.Node, err error) {
 	// defer func() {
 	// if r := recover(); r != nil {
 	// err = PannicedErr{r}
@@ -82,10 +83,16 @@ func MakeNoteCache(bytes []byte) (cache NoteCache, doc ast.Node, err error) {
 
 	doc = parser.VaultParser().Parse(text.NewReader(bytes))
 
+	meta := map[string]MetaDataValue{}
+	for k, v := range doc.OwnerDocument().Meta() {
+		meta[k] = v
+	}
+
 	cache = NoteCache{
+		Path:     path,
 		Tags:     GetTags(doc),
 		Outlinks: "",
-		Metadata: map[string]MetaDataValue{},
+		Metadata: meta,
 	}
 
 	// List the tags.
@@ -97,9 +104,3 @@ type MetaDataValue interface{}
 
 type Link string
 type Tag string
-
-type CacheBuildStatus struct {
-	currentFile VaultLocation
-	fileNumber  int
-	totalFiles  int
-}

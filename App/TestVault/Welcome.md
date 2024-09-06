@@ -7,4 +7,4 @@ hi
 
 [[Link to Note]]
 
-[[LinkToNote#Heading]]
+[[Note#Heading]]
