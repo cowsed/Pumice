@@ -8,6 +8,17 @@ import (
 	"time"
 )
 
+func WriteFCall(fc FCall) ([]byte, error) {
+	var tw = TypedWriter{
+		ReadWriter: &bytes.Buffer{},
+	}
+	err := fc.writeTo(tw)
+	if err != nil {
+		return nil, err
+	}
+	return io.ReadAll(tw.ReadWriter)
+}
+
 type TypedReader struct {
 	io.Reader
 }
