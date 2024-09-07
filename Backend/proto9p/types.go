@@ -20,6 +20,7 @@ var ErrCouldNotWriteAll = errors.New("could not write entire message")
 var ErrStringTooBig = errors.New("string too long to write to wire. max length 65535")
 
 type FCall interface {
+	String() string
 	// With an empty FCall (constructed from size and tag read form the wire), fillFrom in the rest of the data
 	fillFrom(r TypedReader) (FCall, error)
 	writeTo(w TypedWriter) error
@@ -27,7 +28,16 @@ type FCall interface {
 }
 type Type uint8
 type Tag uint16
+
+func (f Tag) String() string {
+	return fmt.Sprintf("%d", f)
+}
+
 type Fid uint32
+
+func (f Fid) String() string {
+	return fmt.Sprintf("%d", f)
+}
 
 // http://9p.io/magic/man2html/5/stat
 type Stat struct {
@@ -42,6 +52,10 @@ type Stat struct {
 	uid    string
 	gid    string
 	muid   string
+}
+
+func (s Stat) String() string {
+	return fmt.Sprintf("Stat{type:%v dev:%v qid:%v mode:%v atime:%v mtime:%v length:%d name:%s uid:%s gid:%s muid:%s}", s.type_, s.dev, s.qid, s.mode, s.atime, s.mode, s.length, s.name, s.uid, s.gid, s.muid)
 }
 
 const NOTAG Tag = 0
@@ -105,6 +119,67 @@ const (
 	Rwstat   Type = 127
 )
 
+func (t Type) String() string {
+	switch t {
+	case Rattach:
+	case Rauth:
+		return "Rauth"
+	case Rclunk:
+		return "Rclunk"
+	case Rcreate:
+		return "Rcreate"
+	case Rerror:
+		return "Rerror"
+	case Rflush:
+		return "Rflush"
+	case Ropen:
+		return "Ropen"
+	case Rread:
+		return "Rread"
+	case Rremove:
+		return "Rremove"
+	case Rstat:
+		return "Rstat"
+	case Rversion:
+		return "Rversion"
+	case Rwalk:
+		return "Rwalk"
+	case Rwrite:
+		return "Rwrite"
+	case Rwstat:
+		return "Rwstat"
+	case Tattach:
+		return "Tattach"
+	case Tauth:
+		return "Tauth"
+	case Tclunk:
+		return "Tclunk"
+	case Tcreate:
+		return "Tcreate"
+	case Terror:
+		return "Terror(invalid)"
+	case Tflush:
+		return "Tflush"
+	case Topen:
+		return "Topen"
+	case Tread:
+		return "Tread"
+	case Tremove:
+		return "Tremove"
+	case Tstat:
+		return "Tstat"
+	case Tversion:
+		return "Tversion"
+	case Twalk:
+		return "Twalk"
+	case Twrite:
+		return "Twrite"
+	case Twstat:
+		return "Twstat"
+	}
+	return "UNKNOWN TYPE"
+}
+
 // http://9p.io/magic/man2html/5/stat
 //
 // wire format:
@@ -117,6 +192,9 @@ type TStat struct {
 
 func (ts *TStat) Type() Type {
 	return Tstat
+}
+func (ts *TStat) String() string {
+	return fmt.Sprintf("%s %s %s", ts.Type().String(), ts.Tag.String(), ts.Fid.String())
 }
 
 // http://9p.io/magic/man2html/5/stat
@@ -132,6 +210,9 @@ type RStat struct {
 func (ts *RStat) Type() Type {
 	return Rstat
 }
+func (ts *RStat) String() string {
+	return fmt.Sprintf("%s %s %s", ts.Type().String(), ts.Tag.String(), ts.Stat.String())
+}
 
 // http://9p.io/magic/man2html/5/stat
 //
@@ -146,6 +227,9 @@ type TWStat struct {
 
 func (ts *TWStat) Type() Type {
 	return Twstat
+}
+func (ts *TWStat) String() string {
+	return fmt.Sprintf("%v tag:%v fid:%v stat:%v", ts.Type(), ts.Tag, ts.Fid, ts.Stat)
 }
 
 // http://9p.io/magic/man2html/5/stat
@@ -174,6 +258,9 @@ type TClunk struct {
 func (t *TClunk) Type() Type {
 	return Tclunk
 }
+func (ts *TClunk) String() string {
+	return fmt.Sprintf("%v tag:%v fid:%v", ts.Type(), ts.Tag, ts.Fid)
+}
 
 // http://9p.io/magic/man2html/5/clunk
 //
@@ -201,6 +288,9 @@ type TRemove struct {
 func (t *TRemove) Type() Type {
 	return Tremove
 }
+func (ts *TRemove) String() string {
+	return fmt.Sprintf("%v tag:%v fid:%v", ts.Type(), ts.Tag, ts.Fid)
+}
 
 // http://9p.io/magic/man2html/5/remove
 //
@@ -224,8 +314,12 @@ type TCreate struct {
 	Tag
 	Fid
 	Name string
-	perm uint32
+	perm Perm
 	Mode
+}
+
+func (ts *TCreate) String() string {
+	return fmt.Sprintf("%v tag:%v fid:%v name:%s perm:%v mode:%v", ts.Type(), ts.Tag, ts.Fid, ts.Name, ts.perm, ts.Mode)
 }
 
 func (t *TCreate) Type() Type {
@@ -260,6 +354,9 @@ type TOpen struct {
 
 func (t *TOpen) Type() Type {
 	return Topen
+}
+func (ts *TOpen) String() string {
+	return fmt.Sprintf("%v tag:%v fid:%v mode:%v", ts.Type(), ts.Tag, ts.Fid, ts.Mode)
 }
 
 // http://9p.io/magic/man2html/5/open
@@ -336,6 +433,9 @@ type TAttach struct {
 
 func (r *TAttach) Type() Type {
 	return Tattach
+}
+func (r *TAttach) String() string {
+	return fmt.Sprintf("%v tag%v fid:%v afid:%v uname:%s aname:%s", r.Type(), r.Tag, r.Fid, r.afid, r.uname, r.aname)
 }
 
 // http://9p.io/magic/man2html/5/attach
@@ -424,6 +524,9 @@ type TWalk struct {
 func (r *TWalk) Type() Type {
 	return Twalk
 }
+func (ts *TWalk) String() string {
+	return fmt.Sprintf("%v tag:%v fid:%v newFid:%v wnames:%v", ts.Type(), ts.Tag, ts.Fid, ts.newFid, ts.wnames)
+}
 
 // http://9p.io/magic/man2html/5/walk
 //
@@ -453,6 +556,9 @@ type TRead struct {
 
 func (r *TRead) Type() Type {
 	return Tread
+}
+func (ts *TRead) String() string {
+	return fmt.Sprintf("%v tag:%v fid:%v offset:%v count:%v", ts.Type(), ts.Tag, ts.Fid, ts.Offset, ts.Count)
 }
 
 // http://9p.io/magic/man2html/5/read
@@ -484,6 +590,9 @@ type TWrite struct {
 func (r *TWrite) Type() Type {
 	return Twrite
 }
+func (ts *TWrite) String() string {
+	return fmt.Sprintf("%v tag:%v fid:%v offset:%v len:%d", ts.Type(), ts.Tag, ts.Fid, ts.Offset, len(ts.Data))
+}
 
 // http://9p.io/magic/man2html/5/read
 //
@@ -498,6 +607,8 @@ type RWrite struct {
 func (r *RWrite) Type() Type {
 	return Rwrite
 }
+
+type Perm uint32
 
 type Mode uint8
 

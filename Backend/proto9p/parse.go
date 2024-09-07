@@ -198,10 +198,11 @@ func (t *TCreate) fillFrom(r TypedReader) (FCall, error) {
 	if err != nil {
 		return nil, err
 	}
-	t.perm, err = r.Read32()
+	perm32, err := r.Read32()
 	if err != nil {
 		return nil, err
 	}
+	t.perm = Perm(perm32)
 
 	m8, err := r.Read8()
 	if err != nil {
@@ -359,7 +360,6 @@ func (tv *RAttach) fillFrom(r TypedReader) (FCall, error) {
 	return tv, nil
 }
 
-// size[4] Tread tag[2] fid[4] offset[8] count[4]
 func (tv *TRead) fillFrom(r TypedReader) (FCall, error) {
 	var err error
 	tv.Tag, err = r.ReadTag()
@@ -382,7 +382,6 @@ func (tv *TRead) fillFrom(r TypedReader) (FCall, error) {
 
 }
 
-// size[4] Rread tag[2] count[4] data[count]
 func (tv *RRead) fillFrom(r TypedReader) (FCall, error) {
 	var err error
 	tv.Tag, err = r.ReadTag()
@@ -402,7 +401,6 @@ func (tv *RRead) fillFrom(r TypedReader) (FCall, error) {
 	return tv, nil
 }
 
-// size[4] Twrite tag[2] fid[4] offset[8] count[4] data[count]
 func (tv *TWrite) fillFrom(r TypedReader) (FCall, error) {
 	var err error
 	tv.Tag, err = r.ReadTag()
@@ -428,7 +426,6 @@ func (tv *TWrite) fillFrom(r TypedReader) (FCall, error) {
 	return tv, nil
 }
 
-// size[4] Rwrite tag[2] count[4]
 func (tv *RWrite) fillFrom(r TypedReader) (FCall, error) {
 	var err error
 	tv.Tag, err = r.ReadTag()
@@ -443,7 +440,6 @@ func (tv *RWrite) fillFrom(r TypedReader) (FCall, error) {
 }
 
 func (tv *TWalk) fillFrom(r TypedReader) (FCall, error) {
-	// size[4] Twalk tag[2] fid[4] newfid[4] nwname[2] nwname*(wname[s])
 	var err error
 	tv.Tag, err = r.ReadTag()
 	if err != nil {
@@ -472,9 +468,6 @@ func (tv *TWalk) fillFrom(r TypedReader) (FCall, error) {
 
 }
 
-// wire format:
-//
-//	size[4] Rwalk tag[2] nwqid[2] nwqid*(wqid[13])
 func (tv *RWalk) fillFrom(r TypedReader) (FCall, error) {
 	var err error
 	tv.Tag, err = r.ReadTag()
@@ -514,7 +507,6 @@ func (tv *RFlush) fillFrom(r TypedReader) (FCall, error) {
 }
 
 func (tv *TVersion) fillFrom(r TypedReader) (FCall, error) {
-	// size[4] Tversion tag[2] msize[4] version[s]
 	var err error
 	tv.Tag, err = r.ReadTag()
 	if err != nil {
@@ -529,7 +521,6 @@ func (tv *TVersion) fillFrom(r TypedReader) (FCall, error) {
 	return tv, err
 }
 
-// size[4] Rversion tag[2] msize[4] version[s]
 func (tv *RVersion) fillFrom(r TypedReader) (FCall, error) {
 	var err error
 	tv.Tag, err = r.ReadTag()

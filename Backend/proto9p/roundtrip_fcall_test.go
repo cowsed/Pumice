@@ -55,7 +55,7 @@ func FuzzRoundTripTCreate(f *testing.F) {
 			Tag:  Tag(tag),
 			Fid:  Fid(fid),
 			Name: name,
-			perm: perm,
+			perm: Perm(perm),
 			Mode: Mode(mode),
 		})
 

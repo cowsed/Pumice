@@ -132,7 +132,7 @@ func (tv *TCreate) writeTo(tw TypedWriter) error {
 	if err != nil {
 		return err
 	}
-	err = tw.Write32(tv.perm)
+	err = tw.Write32(uint32(tv.perm))
 	if err != nil {
 		return err
 	}
@@ -302,7 +302,6 @@ func (tv *RAttach) writeTo(tw TypedWriter) error {
 	return nil
 }
 
-// size[4] Tversion tag[2] msize[4] version[s]
 func (tv *TVersion) writeTo(tw TypedWriter) error {
 	err := tw.WriteType(Tversion)
 	if err != nil {
@@ -323,7 +322,6 @@ func (tv *TVersion) writeTo(tw TypedWriter) error {
 	return nil
 }
 
-// size[4] Tversion tag[2] msize[4] version[s]
 func (tv *RVersion) writeTo(tw TypedWriter) error {
 	err := tw.WriteType(Rversion)
 	if err != nil {
@@ -344,7 +342,6 @@ func (tv *RVersion) writeTo(tw TypedWriter) error {
 	return nil
 }
 
-// size[4] Tflush tag[2] oldtag[2]
 func (tv *TFlush) writeTo(tw TypedWriter) error {
 	err := tw.WriteType(Tflush)
 	if err != nil {
@@ -362,7 +359,6 @@ func (tv *TFlush) writeTo(tw TypedWriter) error {
 	return nil
 }
 
-// size[4] Rflush tag[2]
 func (tv *RFlush) writeTo(tw TypedWriter) error {
 	err := tw.WriteType(Rflush)
 	if err != nil {
