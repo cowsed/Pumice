@@ -33,25 +33,25 @@ func ParseFCall(r io.Reader) (FCall, error) {
 		return (&TVersion{}).fillFrom(packet_reader)
 	case Rversion:
 		return (&RVersion{}).fillFrom(packet_reader)
-	case Tattach:
-		return (&TAttach{}).fillFrom(packet_reader)
-	case Rattach:
-		return (&RAttach{}).fillFrom(packet_reader)
 	case Tauth:
 		return (&TAuth{}).fillFrom(packet_reader)
 	case Rauth:
 		return (&RAuth{}).fillFrom(packet_reader)
 	case Rerror:
 		return (&RError{}).fillFrom(packet_reader)
-
 	case Tflush:
 		return (&TFlush{}).fillFrom(packet_reader)
 	case Rflush:
 		return (&RFlush{}).fillFrom(packet_reader)
+	case Tattach:
+		return (&TAttach{}).fillFrom(packet_reader)
+	case Rattach:
+		return (&RAttach{}).fillFrom(packet_reader)
 	case Twalk:
 		return (&TWalk{}).fillFrom(packet_reader)
 	case Rwalk:
 		return (&RWalk{}).fillFrom(packet_reader)
+
 	case Topen:
 		return (&TOpen{}).fillFrom(packet_reader)
 	case Ropen:
@@ -68,11 +68,63 @@ func ParseFCall(r io.Reader) (FCall, error) {
 		return (&TWrite{}).fillFrom(packet_reader)
 	case Rwrite:
 		return (&RWrite{}).fillFrom(packet_reader)
+	case Tclunk:
+		return (&TClunk{}).fillFrom(packet_reader)
+	case Rclunk:
+		return (&RClunk{}).fillFrom(packet_reader)
+	case Tremove:
+		return (&TRemove{}).fillFrom(packet_reader)
+	case Rremove:
+		return (&RRemove{}).fillFrom(packet_reader)
+
 	default:
 		return nil, fmt.Errorf("got %d: %w", pt8, ErrUnknownType)
 	}
 
 }
+
+func (t *TClunk) fillFrom(r TypedReader) (FCall, error) {
+	var err error
+	t.Tag, err = r.ReadTag()
+	if err != nil {
+		return nil, err
+	}
+	t.Fid, err = r.ReadFid()
+	if err != nil {
+		return nil, err
+	}
+	return t, nil
+}
+func (t *RClunk) fillFrom(r TypedReader) (FCall, error) {
+	var err error
+	t.Tag, err = r.ReadTag()
+	if err != nil {
+		return nil, err
+	}
+	return t, nil
+}
+
+func (t *TRemove) fillFrom(r TypedReader) (FCall, error) {
+	var err error
+	t.Tag, err = r.ReadTag()
+	if err != nil {
+		return nil, err
+	}
+	t.Fid, err = r.ReadFid()
+	if err != nil {
+		return nil, err
+	}
+	return t, nil
+}
+func (t *RRemove) fillFrom(r TypedReader) (FCall, error) {
+	var err error
+	t.Tag, err = r.ReadTag()
+	if err != nil {
+		return nil, err
+	}
+	return t, nil
+}
+
 func (t *TCreate) fillFrom(r TypedReader) (FCall, error) {
 	var err error
 	t.Tag, err = r.ReadTag()

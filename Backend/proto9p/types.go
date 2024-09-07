@@ -38,10 +38,20 @@ var (
 	_ FCall = &TAttach{}
 	_ FCall = &RAttach{}
 	_ FCall = &RError{}
+	_ FCall = &TWalk{}
+	_ FCall = &RWalk{}
 	_ FCall = &TOpen{}
 	_ FCall = &ROpen{}
 	_ FCall = &TCreate{}
 	_ FCall = &RCreate{}
+	_ FCall = &TRead{}
+	_ FCall = &RRead{}
+	_ FCall = &TWrite{}
+	_ FCall = &RWrite{}
+	_ FCall = &TClunk{}
+	_ FCall = &RClunk{}
+	_ FCall = &TRemove{}
+	_ FCall = &RRemove{}
 )
 
 const (
@@ -74,6 +84,60 @@ const (
 	Twstat   Type = 126
 	Rwstat   Type = 127
 )
+
+// http://9p.io/magic/man2html/5/clunk
+//
+// wire format:
+//
+//	size[4] Tclunk tag[2] fid[4]
+type TClunk struct {
+	Tag
+	Fid
+}
+
+func (t *TClunk) Type() Type {
+	return Tclunk
+}
+
+// http://9p.io/magic/man2html/5/clunk
+//
+// wire format:
+//
+//	size[4] Tclunk tag[2] fid[4]
+type RClunk struct {
+	Tag
+}
+
+func (t *RClunk) Type() Type {
+	return Rclunk
+}
+
+// http://9p.io/magic/man2html/5/remove
+//
+// wire format:
+//
+//	size[4] Tclunk tag[2] fid[4]
+type TRemove struct {
+	Tag
+	Fid
+}
+
+func (t *TRemove) Type() Type {
+	return Tremove
+}
+
+// http://9p.io/magic/man2html/5/remove
+//
+// wire format:
+//
+//	size[4] Tclunk tag[2] fid[4]
+type RRemove struct {
+	Tag
+}
+
+func (t *RRemove) Type() Type {
+	return Tremove
+}
 
 // http://9p.io/magic/man2html/5/open
 //

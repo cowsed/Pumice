@@ -1,5 +1,59 @@
 package proto9p
 
+func (tv *TClunk) writeTo(tw TypedWriter) error {
+	err := tw.WriteType(Tclunk)
+	if err != nil {
+		return err
+	}
+	err = tw.WriteTag(tv.Tag)
+	if err != nil {
+		return err
+	}
+	err = tw.WriteFid(tv.Fid)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func (tv *TRemove) writeTo(tw TypedWriter) error {
+	err := tw.WriteType(Tremove)
+	if err != nil {
+		return err
+	}
+	err = tw.WriteTag(tv.Tag)
+	if err != nil {
+		return err
+	}
+	err = tw.WriteFid(tv.Fid)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (tv *RClunk) writeTo(tw TypedWriter) error {
+	err := tw.WriteType(Rclunk)
+	if err != nil {
+		return err
+	}
+	err = tw.WriteTag(tv.Tag)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func (tv *RRemove) writeTo(tw TypedWriter) error {
+	err := tw.WriteType(Rremove)
+	if err != nil {
+		return err
+	}
+	err = tw.WriteTag(tv.Tag)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (tv *TCreate) writeTo(tw TypedWriter) error {
 	err := tw.WriteType(Tcreate)
 	if err != nil {
