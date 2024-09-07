@@ -2,11 +2,10 @@ package proto9p
 
 import (
 	"bytes"
+	"encoding/binary"
 	"reflect"
 	"strings"
 	"testing"
-
-	fuzz "github.com/AdaLogics/go-fuzz-headers"
 )
 
 func RoundTripFCall(t *testing.T, fc FCall) {
@@ -138,15 +137,17 @@ func FuzzRoundTripTWalk(f *testing.F) {
 func FuzzRoundTripRWalk(f *testing.F) {
 	f.Add(uint16(1), bytes.Repeat([]byte{1, 2, 3, 4, 5}, 50))
 	f.Fuzz(func(t *testing.T, a uint16, extra []byte) {
-		fz := fuzz.NewConsumer(extra)
-		var targetSlice []Qid
-		err := fz.CreateSlice(&targetSlice)
-		if err != nil {
-			t.Fatalf("Test Setup Error creating fuzz slice: %v", err)
+		qids := make([]Qid, len(extra)/3)
+		for i := 0; i < len(extra)/(13); i++ {
+			qids[i].Qtype = extra[i*13]
+			qids[i].Vers = binary.LittleEndian.Uint32(extra[i*13+1:])
+			qids[i].Uid = binary.LittleEndian.Uint64(extra[i*13+5:])
+
 		}
+
 		RoundTripFCall(t, &RWalk{
 			Tag:   Tag(a),
-			Wqids: targetSlice,
+			Wqids: qids,
 		})
 
 	})

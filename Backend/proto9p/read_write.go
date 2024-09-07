@@ -3,7 +3,6 @@ package proto9p
 import (
 	"encoding/binary"
 	"errors"
-	"fmt"
 	"io"
 )
 
@@ -113,7 +112,6 @@ func (tw *TypedWriter) Finish() []byte {
 	full := []byte{0, 0, 0, 0}
 	binary.LittleEndian.PutUint32(full, uint32(len(bs)+4))
 	full = append(full, bs...)
-	fmt.Printf("FINISH: %v, %v, %v\n", len(bs), len(full), full)
 	return full
 }
 
