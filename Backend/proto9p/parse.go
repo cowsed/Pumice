@@ -33,6 +33,15 @@ func ParseFCall(r io.Reader) (FCall, error) {
 		return (&TVersion{}).fillFrom(packet_reader)
 	case Rversion:
 		return (&RVersion{}).fillFrom(packet_reader)
+	case Tattach:
+		return (&TAttach{}).fillFrom(packet_reader)
+	case Rattach:
+		return (&RAttach{}).fillFrom(packet_reader)
+	case Tauth:
+		return (&TAuth{}).fillFrom(packet_reader)
+	case Rauth:
+		return (&RAuth{}).fillFrom(packet_reader)
+
 	case Tflush:
 		return (&TFlush{}).fillFrom(packet_reader)
 	case Rflush:
@@ -53,6 +62,83 @@ func ParseFCall(r io.Reader) (FCall, error) {
 		return nil, fmt.Errorf("got %d: %w", pt8, ErrUnknownType)
 	}
 
+}
+
+func (tv *TAuth) fillFrom(r TypedReader) (FCall, error) {
+	var err error
+	tv.Tag, err = r.ReadTag()
+	if err != nil {
+		return nil, err
+	}
+	tv.afid, err = r.ReadFid()
+	if err != nil {
+		return nil, err
+	}
+	tv.aname, err = r.ReadString()
+	if err != nil {
+		return nil, err
+	}
+
+	tv.uname, err = r.ReadString()
+	if err != nil {
+		return nil, err
+	}
+
+	return tv, nil
+}
+func (tv *RAuth) fillFrom(r TypedReader) (FCall, error) {
+	var err error
+	tv.Tag, err = r.ReadTag()
+	if err != nil {
+		return nil, err
+	}
+
+	tv.aqid, err = r.ReadQid()
+	if err != nil {
+		return nil, err
+	}
+
+	return tv, nil
+}
+func (tv *TAttach) fillFrom(r TypedReader) (FCall, error) {
+	var err error
+	tv.Tag, err = r.ReadTag()
+	if err != nil {
+		return nil, err
+	}
+	tv.Fid, err = r.ReadFid()
+	if err != nil {
+		return nil, err
+	}
+	tv.afid, err = r.ReadFid()
+	if err != nil {
+		return nil, err
+	}
+	tv.aname, err = r.ReadString()
+	if err != nil {
+		return nil, err
+	}
+
+	tv.uname, err = r.ReadString()
+	if err != nil {
+		return nil, err
+	}
+
+	return tv, nil
+}
+
+func (tv *RAttach) fillFrom(r TypedReader) (FCall, error) {
+	var err error
+	tv.Tag, err = r.ReadTag()
+	if err != nil {
+		return nil, err
+	}
+
+	tv.Qid, err = r.ReadQid()
+	if err != nil {
+		return nil, err
+	}
+	return tv, nil
 }
 
 // size[4] Tread tag[2] fid[4] offset[8] count[4]

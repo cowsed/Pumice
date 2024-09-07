@@ -31,11 +31,11 @@ const NOTAG Tag = 0
 
 var (
 	_ FCall = &TVersion{}
-	_       = &RVersion{}
-	// _       = &TAuth{}
-	// _       = &RAuth{}
-	// _       = &TAttach{}
-	// _       = &RAttach{}
+	_ FCall = &RVersion{}
+	_ FCall = &TAuth{}
+	_ FCall = &RAuth{}
+	_ FCall = &TAttach{}
+	_ FCall = &RAttach{}
 )
 
 const (
@@ -68,6 +68,51 @@ const (
 	Twstat   Type = 126
 	Rwstat   Type = 127
 )
+
+// http://9p.io/magic/man2html/5/attach
+//
+// wire format:
+//
+//	size[4] Tauth tag[2] afid[4] uname[s] aname[s]
+type TAuth struct {
+	Tag
+	afid  Fid
+	uname string
+	aname string
+}
+
+// http://9p.io/magic/man2html/5/attach
+//
+// wire format:
+//
+//	size[4] Rauth tag[2] aqid[13]
+type RAuth struct {
+	Tag
+	aqid Qid
+}
+
+// http://9p.io/magic/man2html/5/attach
+//
+// wire format:
+//
+//	size[4] Tattach tag[2] fid[4] afid[4] uname[s] aname[s]
+type TAttach struct {
+	Tag
+	Fid
+	afid  Fid
+	uname string
+	aname string
+}
+
+// http://9p.io/magic/man2html/5/attach
+//
+// wire format:
+//
+//	size[4] Rattach tag[2] qid[13]
+type RAttach struct {
+	Tag
+	Qid
+}
 
 // http://9p.io/magic/man2html/5/version
 //

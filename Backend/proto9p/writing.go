@@ -1,5 +1,88 @@
 package proto9p
 
+func (tv *TAuth) writeTo(tw TypedWriter) error {
+	err := tw.WriteType(Tauth)
+	if err != nil {
+		return err
+	}
+	err = tw.WriteTag(tv.Tag)
+	if err != nil {
+		return err
+	}
+	err = tw.WriteFid(tv.afid)
+	if err != nil {
+		return err
+	}
+	err = tw.WriteString(tv.uname)
+	if err != nil {
+		return err
+	}
+	err = tw.WriteString(tv.aname)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (tv *RAuth) writeTo(tw TypedWriter) error {
+	err := tw.WriteType(Rauth)
+	if err != nil {
+		return err
+	}
+	err = tw.WriteTag(tv.Tag)
+	if err != nil {
+		return err
+	}
+	err = tw.WriteQid(tv.aqid)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (tv *TAttach) writeTo(tw TypedWriter) error {
+	err := tw.WriteType(Tattach)
+	if err != nil {
+		return err
+	}
+	err = tw.WriteTag(tv.Tag)
+	if err != nil {
+		return err
+	}
+	err = tw.WriteFid(tv.Fid)
+	if err != nil {
+		return err
+	}
+	err = tw.WriteFid(tv.afid)
+	if err != nil {
+		return err
+	}
+	err = tw.WriteString(tv.uname)
+	if err != nil {
+		return err
+	}
+	err = tw.WriteString(tv.aname)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func (tv *RAttach) writeTo(tw TypedWriter) error {
+	err := tw.WriteType(Rattach)
+	if err != nil {
+		return err
+	}
+	err = tw.WriteTag(tv.Tag)
+	if err != nil {
+		return err
+	}
+	err = tw.WriteQid(tv.Qid)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // size[4] Tversion tag[2] msize[4] version[s]
 func (tv *TVersion) writeTo(tw TypedWriter) error {
 	err := tw.WriteType(Tversion)

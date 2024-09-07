@@ -124,7 +124,6 @@ func FuzzRoundTripTWalk(f *testing.F) {
 	f.Add(uint16(1), uint32(1), uint32(1), "abababababababababa", "b")
 
 	f.Fuzz(func(t *testing.T, a uint16, b uint32, c uint32, extra string, split string) {
-
 		RoundTripFCall(t, &TWalk{
 			Tag:    Tag(a),
 			Fid:    Fid(b),
@@ -148,6 +147,34 @@ func FuzzRoundTripRWalk(f *testing.F) {
 		RoundTripFCall(t, &RWalk{
 			Tag:   Tag(a),
 			Wqids: qids,
+		})
+
+	})
+}
+
+func FuzzRoundTripTAuth(f *testing.F) {
+	f.Add(uint16(1), uint32(1), "", "")
+	f.Fuzz(func(t *testing.T, tag uint16, afid uint32, uname, aname string) {
+		RoundTripFCall(t, &TAuth{
+			Tag:   Tag(tag),
+			afid:  0,
+			uname: "",
+			aname: "",
+		})
+
+	})
+}
+
+func FuzzRoundTripRAuth(f *testing.F) {
+	f.Add(uint16(1), uint8(1), uint32(1), uint64(1))
+	f.Fuzz(func(t *testing.T, tag uint16, qidT uint8, qidVers uint32, qidUid uint64) {
+		RoundTripFCall(t, &RAuth{
+			Tag: Tag(tag),
+			aqid: Qid{
+				Qtype: qidT,
+				Vers:  qidVers,
+				Uid:   qidUid,
+			},
 		})
 
 	})
