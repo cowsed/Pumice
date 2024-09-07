@@ -2,6 +2,8 @@ package proto9p
 
 import (
 	"encoding/binary"
+	"errors"
+	"fmt"
 	"io"
 )
 
@@ -33,11 +35,7 @@ func (tr *TypedReader) ReadFid() (Fid, error) {
 }
 
 func (tr *TypedReader) Read8() (uint8, error) {
-	bs := []byte{0}
-	read, err := tr.Read(bs)
-	if read < 1 {
-		return 0, ErrBufferTooShort
-	}
+	bs, err := tr.ReadN(1)
 	if err != nil {
 		return 0, err
 	}
@@ -56,11 +54,11 @@ func (tr *TypedReader) ReadTag() (Tag, error) {
 
 func (tr *TypedReader) ReadN(n int) ([]byte, error) {
 	bs := make([]byte, n)
-	writ, err := tr.Read(bs)
-	if writ < n {
-		return []byte{}, ErrBufferTooShort
+	read, err := tr.Read(bs)
+	if read < n {
+		return []byte{}, NewErrBufferTooShort(n, read)
 	}
-	if err != nil {
+	if err != nil && !errors.Is(err, io.EOF) {
 		return []byte{}, err
 	}
 	return bs, nil
@@ -71,50 +69,52 @@ func (tr *TypedReader) ReadString() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	buf := make([]byte, length)
-	n, err := tr.Read(buf)
-	if n < int(length) {
-		return "", ErrBufferTooShort
-	} else if err != nil {
+
+	buf, err := tr.ReadN(int(length))
+	if err != nil {
 		return "", err
 	}
 
 	return string(buf), nil
 }
 func (tr *TypedReader) Read64() (uint64, error) {
-	b64 := make([]byte, 8)
-	n, err := tr.Read(b64)
-	if n < 8 {
-		return 0, ErrBufferTooShort
-	} else if err != nil {
+	b64, err := tr.ReadN(8)
+	if err != nil {
 		return 0, err
 	}
+
 	return binary.LittleEndian.Uint64(b64), nil
 }
 func (tr *TypedReader) Read32() (uint32, error) {
-	b32 := make([]byte, 4)
-	n, err := tr.Read(b32)
-	if n < 4 {
-		return 0, ErrBufferTooShort
-	} else if err != nil {
+	b32, err := tr.ReadN(4)
+	if err != nil {
 		return 0, err
 	}
 	return binary.LittleEndian.Uint32(b32), nil
 }
 func (tr *TypedReader) Read16() (uint16, error) {
-	b16 := make([]byte, 2)
-	n, err := tr.Read(b16)
-	if n < 2 {
-		return 0, ErrBufferTooShort
-	}
+	b16, err := tr.ReadN(2)
 	if err != nil {
 		return 0, err
 	}
 	return binary.LittleEndian.Uint16(b16), nil
 }
 
+func (tw *TypedWriter) WriteType(t Type) error {
+	return tw.Write8(uint8(t))
+}
+
 type TypedWriter struct {
-	io.Writer
+	io.ReadWriter
+}
+
+func (tw *TypedWriter) Finish() []byte {
+	bs, _ := io.ReadAll(tw)
+	full := []byte{0, 0, 0, 0}
+	binary.LittleEndian.PutUint32(full, uint32(len(bs)+4))
+	full = append(full, bs...)
+	fmt.Printf("FINISH: %v, %v, %v\n", len(bs), len(full), full)
+	return full
 }
 
 func (tw *TypedWriter) WriteQid(q Qid) error {
@@ -128,6 +128,21 @@ func (tw *TypedWriter) WriteQid(q Qid) error {
 		return err
 	}
 	err = tw.Write64(q.Uid)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (tw *TypedWriter) WriteFid(f Fid) error {
+	return tw.Write32(uint32(f))
+}
+
+func (tw *TypedWriter) WriteN(bs []byte) error {
+	n, err := tw.Write(bs)
+	if n < len(bs) {
+		return ErrCouldNotWriteAll
+	}
 	if err != nil {
 		return err
 	}

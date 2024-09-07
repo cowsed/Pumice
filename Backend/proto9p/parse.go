@@ -30,25 +30,116 @@ func ParseFCall(r io.Reader) (FCall, error) {
 
 	switch Type(pt8) {
 	case Tversion:
-		return (&TVersion{}).fill(packet_reader)
+		return (&TVersion{}).fillFrom(packet_reader)
 	case Rversion:
-		return (&RVersion{}).fill(packet_reader)
+		return (&RVersion{}).fillFrom(packet_reader)
 	case Tflush:
-		return (&TFlush{}).fill(packet_reader)
+		return (&TFlush{}).fillFrom(packet_reader)
 	case Rflush:
-		return (&RFlush{}).fill(packet_reader)
+		return (&RFlush{}).fillFrom(packet_reader)
 	case Twalk:
-		return (&TWalk{}).fill(packet_reader)
+		return (&TWalk{}).fillFrom(packet_reader)
 	case Rwalk:
-		return (&RWalk{}).fill(packet_reader)
+		return (&RWalk{}).fillFrom(packet_reader)
+	case Tread:
+		return (&TRead{}).fillFrom(packet_reader)
+	case Rread:
+		return (&RRead{}).fillFrom(packet_reader)
+	case Twrite:
+		return (&TWrite{}).fillFrom(packet_reader)
+	case Rwrite:
+		return (&RWrite{}).fillFrom(packet_reader)
 	default:
 		return nil, fmt.Errorf("got %d: %w", pt8, ErrUnknownType)
 	}
 
 }
 
-func (tv *TWalk) fill(r TypedReader) (FCall, error) {
-	// size[4] Twalk tag[2] fid[4] newfid[4] nwname[2] nwname*(wname[s])	var err error
+// size[4] Tread tag[2] fid[4] offset[8] count[4]
+func (tv *TRead) fillFrom(r TypedReader) (FCall, error) {
+	var err error
+	tv.Tag, err = r.ReadTag()
+	if err != nil {
+		return nil, err
+	}
+	tv.Fid, err = r.ReadFid()
+	if err != nil {
+		return nil, err
+	}
+	tv.Offset, err = r.Read64()
+	if err != nil {
+		return nil, err
+	}
+	tv.Count, err = r.Read32()
+	if err != nil {
+		return nil, err
+	}
+	return tv, nil
+
+}
+
+// size[4] Rread tag[2] count[4] data[count]
+func (tv *RRead) fillFrom(r TypedReader) (FCall, error) {
+	var err error
+	tv.Tag, err = r.ReadTag()
+	if err != nil {
+		return nil, err
+	}
+
+	count, err := r.Read32()
+	if err != nil {
+		return nil, err
+	}
+
+	tv.Data, err = r.ReadN(int(count))
+	if err != nil {
+		return nil, err
+	}
+	return tv, nil
+}
+
+// size[4] Twrite tag[2] fid[4] offset[8] count[4] data[count]
+func (tv *TWrite) fillFrom(r TypedReader) (FCall, error) {
+	var err error
+	tv.Tag, err = r.ReadTag()
+	if err != nil {
+		return nil, err
+	}
+	tv.Fid, err = r.ReadFid()
+	if err != nil {
+		return nil, err
+	}
+	tv.Offset, err = r.Read64()
+	if err != nil {
+		return nil, err
+	}
+	count, err := r.Read32()
+	if err != nil {
+		return nil, err
+	}
+	tv.Data, err = r.ReadN(int(count))
+	if err != nil {
+		return nil, err
+	}
+	return tv, nil
+}
+
+// size[4] Rwrite tag[2] count[4]
+func (tv *RWrite) fillFrom(r TypedReader) (FCall, error) {
+	var err error
+	tv.Tag, err = r.ReadTag()
+	if err != nil {
+		return nil, err
+	}
+	tv.Count, err = r.Read32()
+	if err != nil {
+		return nil, err
+	}
+	return tv, nil
+}
+
+func (tv *TWalk) fillFrom(r TypedReader) (FCall, error) {
+	// size[4] Twalk tag[2] fid[4] newfid[4] nwname[2] nwname*(wname[s])
 	var err error
 	tv.Tag, err = r.ReadTag()
 	if err != nil {
@@ -66,9 +157,9 @@ func (tv *TWalk) fill(r TypedReader) (FCall, error) {
 	if err != nil {
 		return nil, err
 	}
-	wnames := make([]string, numWname)
+	tv.wnames = make([]string, numWname)
 	for i := 0; i < int(numWname); i++ {
-		wnames[i], err = r.ReadString()
+		tv.wnames[i], err = r.ReadString()
 		if err != nil {
 			return nil, err
 		}
@@ -76,17 +167,20 @@ func (tv *TWalk) fill(r TypedReader) (FCall, error) {
 	return tv, nil
 
 }
-func (tv *RWalk) fill(r TypedReader) (FCall, error) {
-	// size[4] Rwalk tag[2] nwqid[2] nwqid*(wqid[13])
+
+// wire format:
+//
+//	size[4] Rwalk tag[2] nwqid[2] nwqid*(wqid[13])
+func (tv *RWalk) fillFrom(r TypedReader) (FCall, error) {
 	var err error
 	tv.Tag, err = r.ReadTag()
 	if err != nil {
 		return nil, err
 	}
 	numQids, err := r.Read16()
-	qids := make([]Qid, numQids)
+	tv.Wqids = make([]Qid, numQids)
 	for i := 0; i < int(numQids); i++ {
-		qids[i], err = r.ReadQid()
+		tv.Wqids[i], err = r.ReadQid()
 		if err != nil {
 			return nil, err
 		}
@@ -95,8 +189,10 @@ func (tv *RWalk) fill(r TypedReader) (FCall, error) {
 	return tv, err
 }
 
-func (tv *TFlush) fill(r TypedReader) (FCall, error) {
-	// size[4] Tflush tag[2] oldtag[2]
+// wire format:
+//
+// size[4] Tflush tag[2] oldtag[2]
+func (tv *TFlush) fillFrom(r TypedReader) (FCall, error) {
 	var err error
 	tv.Tag, err = r.ReadTag()
 	if err != nil {
@@ -106,14 +202,14 @@ func (tv *TFlush) fill(r TypedReader) (FCall, error) {
 	return tv, err
 
 }
-func (tv *RFlush) fill(r TypedReader) (FCall, error) {
-	// size[4] Rflush tag[2]
+
+func (tv *RFlush) fillFrom(r TypedReader) (FCall, error) {
 	var err error
 	tv.Tag, err = r.ReadTag()
 	return tv, err
 }
 
-func (tv *TVersion) fill(r TypedReader) (FCall, error) {
+func (tv *TVersion) fillFrom(r TypedReader) (FCall, error) {
 	// size[4] Tversion tag[2] msize[4] version[s]
 	var err error
 	tv.Tag, err = r.ReadTag()
@@ -129,8 +225,8 @@ func (tv *TVersion) fill(r TypedReader) (FCall, error) {
 	return tv, err
 }
 
-func (tv *RVersion) fill(r TypedReader) (FCall, error) {
-	// size[4] Rversion tag[2] msize[4] version[s]
+// size[4] Rversion tag[2] msize[4] version[s]
+func (tv *RVersion) fillFrom(r TypedReader) (FCall, error) {
 	var err error
 	tv.Tag, err = r.ReadTag()
 	if err != nil {

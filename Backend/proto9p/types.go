@@ -2,6 +2,7 @@ package proto9p
 
 import (
 	"errors"
+	"fmt"
 )
 
 // http://web.archive.org/web/20190304021146/https://knusbaum.com/useful/rfc9p2000
@@ -9,18 +10,33 @@ import (
 const MaxStrSize = 65535
 
 var ErrBufferTooShort = errors.New("buffer does not contain all the bytes needed to parse this element")
+
+func NewErrBufferTooShort(wanted, got int) error {
+	return fmt.Errorf("wanted: %d, got: %d: %w", wanted, got, ErrBufferTooShort)
+}
+
 var ErrCouldNotWriteAll = errors.New("could not write entire message")
 var ErrStringTooBig = errors.New("string too long to write to wire. max length 65535")
 
 type FCall interface {
-	// With an empty FCall (constructed from size and tag read form the wire), fill in the rest of the data
-	fill(r TypedReader) (FCall, error)
+	// With an empty FCall (constructed from size and tag read form the wire), fillFrom in the rest of the data
+	fillFrom(r TypedReader) (FCall, error)
+	writeTo(w TypedWriter) error
 }
 type Type uint8
 type Tag uint16
 type Fid uint32
 
 const NOTAG Tag = 0
+
+var (
+	_ FCall = &TVersion{}
+	_       = &RVersion{}
+	// _       = &TAuth{}
+	// _       = &RAuth{}
+	// _       = &TAttach{}
+	// _       = &RAttach{}
+)
 
 const (
 	Tversion Type = 100
@@ -54,6 +70,10 @@ const (
 )
 
 // http://9p.io/magic/man2html/5/version
+//
+// wire format:
+//
+//	size[4] Tversion tag[2] msize[4] version[s]
 type TVersion struct {
 	Tag
 	msize   uint32
@@ -61,6 +81,10 @@ type TVersion struct {
 }
 
 // http://9p.io/magic/man2html/5/version
+//
+// wire format:
+//
+//	size[4] Rversion tag[2] msize[4] version[s]
 type RVersion struct {
 	Tag
 	msize   uint32
@@ -68,17 +92,29 @@ type RVersion struct {
 }
 
 // http://9p.io/magic/man2html/5/flush
+//
+// wire format:
+//
+//	size[4] Tflush tag[2] oldtag[2]
 type TFlush struct {
 	Tag
 	Oldtag Tag
 }
 
 // http://9p.io/magic/man2html/5/flush
+//
+// wire format:
+//
+//	size[4] Rflush tag[2]
 type RFlush struct {
 	Tag
 }
 
 // http://9p.io/magic/man2html/5/walk
+//
+// wire format:
+//
+//	size[4] Twalk tag[2] fid[4] newfid[4] nwname[2] nwname*(wname[s])
 type TWalk struct {
 	Tag
 	Fid
@@ -87,12 +123,20 @@ type TWalk struct {
 }
 
 // http://9p.io/magic/man2html/5/walk
+//
+// wire format:
+//
+//	size[4] Rwalk tag[2] nwqid[2] nwqid*(wqid[13])
 type RWalk struct {
 	Tag
 	Wqids []Qid
 }
 
 // http://9p.io/magic/man2html/5/read
+//
+// wire format:
+//
+//	size[4] Tread tag[2] fid[4] offset[8] count[4]
 type TRead struct {
 	Tag
 	Fid
@@ -101,10 +145,35 @@ type TRead struct {
 }
 
 // http://9p.io/magic/man2html/5/read
+//
+// wire format:
+//
+//	size[4] Rread tag[2] count[4] data[count]
 type RRead struct {
 	Tag
+	Data []byte
+}
+
+// http://9p.io/magic/man2html/5/read
+//
+// wire format:
+//
+//	size[4] Twrite tag[2] fid[4] offset[8] count[4] data[count]
+type TWrite struct {
+	Tag
+	Fid
+	Offset uint64
+	Data   []byte
+}
+
+// http://9p.io/magic/man2html/5/read
+//
+// wire_format:
+//
+//	size[4] Rwrite tag[2] count[4]
+type RWrite struct {
+	Tag
 	Count uint32
-	Data  []byte
 }
 
 type Mode uint8
