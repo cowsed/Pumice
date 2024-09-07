@@ -52,6 +52,14 @@ func ParseFCall(r io.Reader) (FCall, error) {
 		return (&TWalk{}).fillFrom(packet_reader)
 	case Rwalk:
 		return (&RWalk{}).fillFrom(packet_reader)
+	case Topen:
+		return (&TOpen{}).fillFrom(packet_reader)
+	case Ropen:
+		return (&ROpen{}).fillFrom(packet_reader)
+	case Tcreate:
+		return (&TCreate{}).fillFrom(packet_reader)
+	case Rcreate:
+		return (&RCreate{}).fillFrom(packet_reader)
 	case Tread:
 		return (&TRead{}).fillFrom(packet_reader)
 	case Rread:
@@ -64,6 +72,90 @@ func ParseFCall(r io.Reader) (FCall, error) {
 		return nil, fmt.Errorf("got %d: %w", pt8, ErrUnknownType)
 	}
 
+}
+func (t *TCreate) fillFrom(r TypedReader) (FCall, error) {
+	var err error
+	t.Tag, err = r.ReadTag()
+	if err != nil {
+		return nil, err
+	}
+	t.Fid, err = r.ReadFid()
+	if err != nil {
+		return nil, err
+	}
+	t.Name, err = r.ReadString()
+	if err != nil {
+		return nil, err
+	}
+	t.perm, err = r.Read32()
+	if err != nil {
+		return nil, err
+	}
+
+	m8, err := r.Read8()
+	if err != nil {
+		return nil, err
+	}
+	t.Mode = Mode(m8)
+
+	return t, nil
+}
+
+func (tv *RCreate) fillFrom(r TypedReader) (FCall, error) {
+	var err error
+	tv.Tag, err = r.ReadTag()
+	if err != nil {
+		return nil, err
+	}
+	tv.Qid, err = r.ReadQid()
+	if err != nil {
+		return nil, err
+	}
+
+	tv.IOUnit, err = r.Read32()
+	if err != nil {
+		return nil, err
+	}
+
+	return tv, nil
+}
+
+func (t *TOpen) fillFrom(r TypedReader) (FCall, error) {
+	var err error
+	t.Tag, err = r.ReadTag()
+	if err != nil {
+		return nil, err
+	}
+	t.Fid, err = r.ReadFid()
+	if err != nil {
+		return nil, err
+	}
+	m8, err := r.Read8()
+	if err != nil {
+		return nil, err
+	}
+	t.Mode = Mode(m8)
+
+	return t, nil
+}
+
+func (tv *ROpen) fillFrom(r TypedReader) (FCall, error) {
+	var err error
+	tv.Tag, err = r.ReadTag()
+	if err != nil {
+		return nil, err
+	}
+	tv.Qid, err = r.ReadQid()
+	if err != nil {
+		return nil, err
+	}
+
+	tv.IOUnit, err = r.Read32()
+	if err != nil {
+		return nil, err
+	}
+
+	return tv, nil
 }
 
 func (t *RError) fillFrom(r TypedReader) (FCall, error) {

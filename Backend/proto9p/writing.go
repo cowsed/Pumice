@@ -1,7 +1,95 @@
 package proto9p
 
+func (tv *TCreate) writeTo(tw TypedWriter) error {
+	err := tw.WriteType(Tcreate)
+	if err != nil {
+		return err
+	}
+	err = tw.WriteTag(tv.Tag)
+	if err != nil {
+		return err
+	}
+	err = tw.WriteFid(tv.Fid)
+	if err != nil {
+		return err
+	}
+	err = tw.WriteString(tv.Name)
+	if err != nil {
+		return err
+	}
+	err = tw.Write32(tv.perm)
+	if err != nil {
+		return err
+	}
+	err = tw.Write8(uint8(tv.Mode))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (tv *RCreate) writeTo(tw TypedWriter) error {
+	err := tw.WriteType(Rcreate)
+	if err != nil {
+		return err
+	}
+	err = tw.WriteTag(tv.Tag)
+	if err != nil {
+		return err
+	}
+	err = tw.WriteQid(tv.Qid)
+	if err != nil {
+		return err
+	}
+	err = tw.Write32(tv.IOUnit)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (tv *TOpen) writeTo(tw TypedWriter) error {
+	err := tw.WriteType(Topen)
+	if err != nil {
+		return err
+	}
+	err = tw.WriteTag(tv.Tag)
+	if err != nil {
+		return err
+	}
+	err = tw.WriteFid(tv.Fid)
+	if err != nil {
+		return err
+	}
+	err = tw.Write8(uint8(tv.Mode))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (tv *ROpen) writeTo(tw TypedWriter) error {
+	err := tw.WriteType(Ropen)
+	if err != nil {
+		return err
+	}
+	err = tw.WriteTag(tv.Tag)
+	if err != nil {
+		return err
+	}
+	err = tw.WriteQid(tv.Qid)
+	if err != nil {
+		return err
+	}
+	err = tw.Write32(tv.IOUnit)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (tv *RError) writeTo(tw TypedWriter) error {
-	err := tw.WriteType(Terror)
+	err := tw.WriteType(Rerror)
 	if err != nil {
 		return err
 	}

@@ -38,6 +38,10 @@ var (
 	_ FCall = &TAttach{}
 	_ FCall = &RAttach{}
 	_ FCall = &RError{}
+	_ FCall = &TOpen{}
+	_ FCall = &ROpen{}
+	_ FCall = &TCreate{}
+	_ FCall = &RCreate{}
 )
 
 const (
@@ -70,6 +74,68 @@ const (
 	Twstat   Type = 126
 	Rwstat   Type = 127
 )
+
+// http://9p.io/magic/man2html/5/open
+//
+// wire format:
+//
+//	size[4] Topen tag[2] fid[4] mode[1]
+type TCreate struct {
+	Tag
+	Fid
+	Name string
+	perm uint32
+	Mode
+}
+
+func (t *TCreate) Type() Type {
+	return Tcreate
+}
+
+// http://9p.io/magic/man2html/5/open
+//
+// wire format:
+//
+//	size[4] Ropen tag[2] qid[13] iounit[4]
+type RCreate struct {
+	Tag
+	Qid
+	IOUnit uint32
+}
+
+func (t *RCreate) Type() Type {
+	return Rcreate
+}
+
+// http://9p.io/magic/man2html/5/open
+//
+// wire format:
+//
+//	size[4] Topen tag[2] fid[4] mode[1]
+type TOpen struct {
+	Tag
+	Fid
+	Mode
+}
+
+func (t *TOpen) Type() Type {
+	return Topen
+}
+
+// http://9p.io/magic/man2html/5/open
+//
+// wire format:
+//
+//	size[4] Ropen tag[2] qid[13] iounit[4]
+type ROpen struct {
+	Tag
+	Qid
+	IOUnit uint32
+}
+
+func (t *ROpen) Type() Type {
+	return Ropen
+}
 
 // http://9p.io/magic/man2html/5/0intro
 //

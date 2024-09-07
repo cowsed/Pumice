@@ -47,6 +47,62 @@ func FuzzRoundTripRError(f *testing.F) {
 	})
 }
 
+func FuzzRoundTripTCreate(f *testing.F) {
+	f.Add(uint16(1), uint32(0), "", uint32(1), uint8(0))
+	f.Fuzz(func(t *testing.T, tag uint16, fid uint32, name string, perm uint32, mode uint8) {
+		RoundTripFCall(t, &TCreate{
+			Tag:  Tag(tag),
+			Fid:  Fid(fid),
+			Name: name,
+			perm: perm,
+			Mode: Mode(mode),
+		})
+
+	})
+}
+func FuzzRoundTripRCreate(f *testing.F) {
+	f.Add(uint16(1), uint8(1), uint32(0), uint64(0), uint32(0))
+	f.Fuzz(func(t *testing.T, tag uint16, qT uint8, qV uint32, qU uint64, iou uint32) {
+		RoundTripFCall(t, &RCreate{
+			Tag: Tag(tag),
+			Qid: Qid{
+				Qtype: qT,
+				Vers:  qV,
+				Uid:   qU,
+			},
+			IOUnit: iou,
+		})
+
+	})
+}
+
+func FuzzRoundTripTopen(f *testing.F) {
+	f.Add(uint16(1), uint32(0), uint8(0))
+	f.Fuzz(func(t *testing.T, tag uint16, fid uint32, mode uint8) {
+		RoundTripFCall(t, &TOpen{
+			Tag:  Tag(tag),
+			Fid:  Fid(fid),
+			Mode: Mode(mode),
+		})
+
+	})
+}
+func FuzzRoundTripRopen(f *testing.F) {
+	f.Add(uint16(1), uint8(1), uint32(0), uint64(0), uint32(0))
+	f.Fuzz(func(t *testing.T, tag uint16, qT uint8, qV uint32, qU uint64, iou uint32) {
+		RoundTripFCall(t, &ROpen{
+			Tag: Tag(tag),
+			Qid: Qid{
+				Qtype: qT,
+				Vers:  qV,
+				Uid:   qU,
+			},
+			IOUnit: iou,
+		})
+
+	})
+}
+
 func FuzzRoundTripTVersion(f *testing.F) {
 	f.Add(uint16(1), uint32(2), "")
 	f.Add(uint16(1), uint32(65535), "9p2000")
