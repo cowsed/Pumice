@@ -1,9 +1,11 @@
 package proto9p
 
 import (
+	"bytes"
 	"encoding/binary"
 	"errors"
 	"io"
+	"time"
 )
 
 type TypedReader struct {
@@ -97,6 +99,68 @@ func (tr *TypedReader) Read16() (uint16, error) {
 		return 0, err
 	}
 	return binary.LittleEndian.Uint16(b16), nil
+}
+
+func (tr *TypedReader) ReadStat() (Stat, error) {
+	var st Stat
+	var err error
+
+	// size, but we don't actually need it at this point idt
+	_, err = tr.Read16()
+	if err != nil {
+		return st, err
+	}
+
+	st.type_, err = tr.Read16()
+	if err != nil {
+		return st, err
+	}
+	st.dev, err = tr.Read32()
+	if err != nil {
+		return st, err
+	}
+	st.qid, err = tr.ReadQid()
+	if err != nil {
+		return st, err
+	}
+	m32, err := tr.Read32()
+	st.mode = Mode(m32)
+	if err != nil {
+		return st, err
+	}
+	atime32, err := tr.Read32()
+	if err != nil {
+		return st, err
+	}
+	st.atime = time.Unix(int64(atime32), 0)
+	mtime32, err := tr.Read32()
+	if err != nil {
+		return st, err
+	}
+	st.mtime = time.Unix(int64(mtime32), 0)
+
+	st.length, err = tr.Read64()
+	if err != nil {
+		return st, err
+	}
+	st.name, err = tr.ReadString()
+	if err != nil {
+		return st, err
+	}
+	st.uid, err = tr.ReadString()
+	if err != nil {
+		return st, err
+	}
+	st.gid, err = tr.ReadString()
+	if err != nil {
+		return st, err
+	}
+	st.muid, err = tr.ReadString()
+	if err != nil {
+		return st, err
+	}
+
+	return st, nil
 }
 
 func (tw *TypedWriter) WriteType(t Type) error {
@@ -219,4 +283,68 @@ func (tw *TypedWriter) WriteString(s string) error {
 
 func (tw *TypedWriter) WriteTag(tag Tag) error {
 	return tw.Write16(uint16(tag))
+}
+func (outer *TypedWriter) WriteStat(stat Stat) error {
+	tw := TypedWriter{&bytes.Buffer{}}
+	var err error
+
+	err = tw.Write16(stat.type_)
+	if err != nil {
+		return err
+	}
+
+	err = tw.Write32(stat.dev)
+	if err != nil {
+		return err
+	}
+	err = tw.WriteQid(stat.qid)
+	if err != nil {
+		return err
+	}
+	err = tw.Write32(uint32(stat.mode))
+	if err != nil {
+		return err
+	}
+	err = tw.Write32(uint32(stat.atime.Unix()))
+	if err != nil {
+		return err
+	}
+	err = tw.Write32(uint32(stat.mtime.Unix()))
+	if err != nil {
+		return err
+	}
+	err = tw.Write64(stat.length)
+	if err != nil {
+		return err
+	}
+	err = tw.WriteString(stat.name)
+	if err != nil {
+		return err
+	}
+	err = tw.WriteString(stat.uid)
+	if err != nil {
+		return err
+	}
+	err = tw.WriteString(stat.gid)
+	if err != nil {
+		return err
+	}
+	err = tw.WriteString(stat.muid)
+	if err != nil {
+		return err
+	}
+
+	bs, err := io.ReadAll(tw)
+	if err != nil {
+		return err
+	}
+	err = outer.Write16(uint16(len(bs) + 4))
+	if err != nil {
+		return err
+	}
+	err = outer.WriteN(bs)
+	if err != nil {
+		return err
+	}
+	return nil
 }

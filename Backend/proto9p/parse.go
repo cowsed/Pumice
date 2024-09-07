@@ -109,8 +109,7 @@ func (t *RStat) fillFrom(r TypedReader) (FCall, error) {
 	if err != nil {
 		return nil, err
 	}
-	st, err := r.Read32()
-	t.Stat = Stat(st)
+	t.Stat, err = r.ReadStat()
 	if err != nil {
 		return nil, err
 	}
@@ -127,8 +126,7 @@ func (t *TWStat) fillFrom(r TypedReader) (FCall, error) {
 	if err != nil {
 		return nil, err
 	}
-	st, err := r.Read32()
-	t.Stat = Stat(st)
+	t.Stat, err = r.ReadStat()
 	if err != nil {
 		return nil, err
 	}

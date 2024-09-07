@@ -24,7 +24,7 @@ func (tv *RStat) writeTo(tw TypedWriter) error {
 	if err != nil {
 		return err
 	}
-	err = tw.Write32(uint32(tv.Stat))
+	err = tw.WriteStat(tv.Stat)
 	if err != nil {
 		return err
 	}
@@ -43,7 +43,7 @@ func (tv *TWStat) writeTo(tw TypedWriter) error {
 	if err != nil {
 		return err
 	}
-	err = tw.Write32(uint32(tv.Stat))
+	err = tw.WriteStat(tv.Stat)
 	if err != nil {
 		return err
 	}

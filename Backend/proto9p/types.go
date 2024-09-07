@@ -3,6 +3,7 @@ package proto9p
 import (
 	"errors"
 	"fmt"
+	"time"
 )
 
 // http://web.archive.org/web/20190304021146/https://knusbaum.com/useful/rfc9p2000
@@ -27,7 +28,21 @@ type FCall interface {
 type Type uint8
 type Tag uint16
 type Fid uint32
-type Stat uint32
+
+// http://9p.io/magic/man2html/5/stat
+type Stat struct {
+	type_  uint16
+	dev    uint32
+	qid    Qid
+	mode   Mode
+	atime  time.Time
+	mtime  time.Time
+	length uint64
+	name   string
+	uid    string
+	gid    string
+	muid   string
+}
 
 const NOTAG Tag = 0
 

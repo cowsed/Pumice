@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 )
 
 func RoundTripFCall(t *testing.T, fc FCall) {
@@ -95,23 +96,55 @@ func FuzzRoundTripTStat(f *testing.F) {
 }
 
 func FuzzRoundTripRStat(f *testing.F) {
-	f.Add(uint16(1), uint32(1))
-	f.Fuzz(func(t *testing.T, tag uint16, stat uint32) {
+	f.Add(uint16(1), uint16(2), uint32(3), uint8(4), uint32(5), uint64(6), uint8(7), uint32(8), uint32(9), uint64(10), "file.txt", "name", "group", "name")
+	f.Fuzz(func(t *testing.T, tag uint16, type_ uint16, dev uint32, qidT uint8, qidV uint32, qidU uint64, mode uint8, atime uint32, mtime uint32, length uint64, name string, uid string, gid string, muid string) {
 		RoundTripFCall(t, &RStat{
-			Tag:  Tag(tag),
-			Stat: Stat(stat),
+			Tag: Tag(tag),
+			Stat: Stat{
+				type_: type_,
+				dev:   dev,
+				qid: Qid{
+					Qtype: qidT,
+					Vers:  qidV,
+					Uid:   qidU,
+				},
+				mode:   Mode(mode),
+				atime:  time.Unix(int64(atime), 0),
+				mtime:  time.Unix(int64(mtime), 0),
+				length: length,
+				name:   name,
+				uid:    uid,
+				gid:    gid,
+				muid:   muid,
+			},
 		})
 
 	})
 }
 
 func FuzzRoundTripWTStat(f *testing.F) {
-	f.Add(uint16(1), uint32(1), uint32(1))
-	f.Fuzz(func(t *testing.T, tag uint16, fid uint32, stat uint32) {
+	f.Add(uint16(1), uint32(1), uint16(1), uint32(1), uint8(1), uint32(1), uint64(1), uint8(1), uint32(1), uint32(1), uint64(1), "file.txt", "name", "group", "name")
+	f.Fuzz(func(t *testing.T, tag uint16, fid uint32, type_ uint16, dev uint32, qidT uint8, qidV uint32, qidU uint64, mode uint8, atime uint32, mtime uint32, length uint64, name string, uid string, gid string, muid string) {
 		RoundTripFCall(t, &TWStat{
-			Tag:  Tag(tag),
-			Fid:  Fid(fid),
-			Stat: Stat(stat),
+			Tag: Tag(tag),
+			Fid: Fid(fid),
+			Stat: Stat{
+				type_: type_,
+				dev:   dev,
+				qid: Qid{
+					Qtype: qidT,
+					Vers:  qidV,
+					Uid:   qidU,
+				},
+				mode:   Mode(mode),
+				atime:  time.Unix(int64(atime), 0),
+				mtime:  time.Unix(int64(mtime), 0),
+				length: length,
+				name:   name,
+				uid:    uid,
+				gid:    gid,
+				muid:   muid,
+			},
 		})
 
 	})
