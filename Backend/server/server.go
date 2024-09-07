@@ -35,20 +35,6 @@ type Server interface {
 	Wstat(Conn, *proto9p.TWStat) (proto9p.FCall, error)
 }
 
-func readFromWire(r io.Reader, fromWire chan proto9p.FCall, wg *sync.WaitGroup) {
-	defer wg.Done()
-	defer close(fromWire)
-
-	for {
-		call, err := proto9p.ParseFCall(r)
-		if err != nil {
-			slog.Error("Reading fcall", "err", err)
-			return
-		}
-		slog.Debug("read call", "call", call)
-		fromWire <- call
-	}
-}
 func writeToWire(w io.Writer, toWire chan proto9p.FCall, wg *sync.WaitGroup) {
 	defer wg.Done()
 	defer close(toWire)
@@ -73,28 +59,47 @@ func writeToWire(w io.Writer, toWire chan proto9p.FCall, wg *sync.WaitGroup) {
 	}
 }
 
+func takeCalls(fromWire, toWire chan proto9p.FCall, server Server, conn Conn, wg *sync.WaitGroup) {
+	defer close(toWire)
+	defer wg.Done()
+
+	for call := range fromWire {
+		call, err := handleFCall(call, server, conn)
+		if err != nil {
+			slog.Error("Error handling fcall", "err", err)
+		}
+		toWire <- call
+	}
+
+}
+
 // Serve a single channel of data
 // this may be one of many channels of data if server can handle multiple requests
 // the server needs to ne handle the multiple clients (identified by Conn) if is is used in this way
-func Serve(r io.Reader, w io.Writer, server Server) {
+func Serve(r io.Reader, w io.Writer, server Server) error {
 	readChan := make(chan proto9p.FCall, 10)
 	writeChan := make(chan proto9p.FCall, 10)
 	conn := server.NewConnection()
 	// reading thread
 	var wg sync.WaitGroup
 	wg.Add(2)
-	go readFromWire(r, readChan, &wg)
+	defer func() { wg.Wait() }()
+
+	go takeCalls(readChan, writeChan, server, conn, &wg)
 	go writeToWire(w, writeChan, &wg)
-	for call := range readChan {
-		call, err := handleFCall(call, server, conn)
+
+	defer close(readChan)
+
+	for {
+		call, err := proto9p.ParseFCall(r)
 		if err != nil {
-			slog.Error("Error handling fcall", "err", err)
-			continue
+			slog.Error("Reading fcall", "err", err)
+			return err
 		}
-		writeChan <- call
+		slog.Debug("read call", "call", call)
+		readChan <- call
 	}
 
-	wg.Wait()
 }
 
 func handleFCall(call proto9p.FCall, srv Server, conn Conn) (proto9p.FCall, error) {
