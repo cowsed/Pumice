@@ -1,5 +1,21 @@
 package proto9p
 
+func (tv *RError) writeTo(tw TypedWriter) error {
+	err := tw.WriteType(Terror)
+	if err != nil {
+		return err
+	}
+	err = tw.WriteTag(tv.Tag)
+	if err != nil {
+		return err
+	}
+	err = tw.WriteString(tv.ename)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (tv *TAuth) writeTo(tw TypedWriter) error {
 	err := tw.WriteType(Tauth)
 	if err != nil {

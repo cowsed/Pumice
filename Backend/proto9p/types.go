@@ -22,6 +22,7 @@ type FCall interface {
 	// With an empty FCall (constructed from size and tag read form the wire), fillFrom in the rest of the data
 	fillFrom(r TypedReader) (FCall, error)
 	writeTo(w TypedWriter) error
+	Type() Type
 }
 type Type uint8
 type Tag uint16
@@ -36,6 +37,7 @@ var (
 	_ FCall = &RAuth{}
 	_ FCall = &TAttach{}
 	_ FCall = &RAttach{}
+	_ FCall = &RError{}
 )
 
 const (
@@ -69,6 +71,20 @@ const (
 	Rwstat   Type = 127
 )
 
+// http://9p.io/magic/man2html/5/0intro
+//
+// wire format:
+//
+//	size[4] Rerror tag[2] ename[s]
+type RError struct {
+	Tag
+	ename string
+}
+
+func (r *RError) Type() Type {
+	return Rerror
+}
+
 // http://9p.io/magic/man2html/5/attach
 //
 // wire format:
@@ -81,6 +97,10 @@ type TAuth struct {
 	aname string
 }
 
+func (r *TAuth) Type() Type {
+	return Tauth
+}
+
 // http://9p.io/magic/man2html/5/attach
 //
 // wire format:
@@ -89,6 +109,10 @@ type TAuth struct {
 type RAuth struct {
 	Tag
 	aqid Qid
+}
+
+func (r *RAuth) Type() Type {
+	return Rauth
 }
 
 // http://9p.io/magic/man2html/5/attach
@@ -104,6 +128,10 @@ type TAttach struct {
 	aname string
 }
 
+func (r *TAttach) Type() Type {
+	return Tattach
+}
+
 // http://9p.io/magic/man2html/5/attach
 //
 // wire format:
@@ -112,6 +140,10 @@ type TAttach struct {
 type RAttach struct {
 	Tag
 	Qid
+}
+
+func (r *RAttach) Type() Type {
+	return Rattach
 }
 
 // http://9p.io/magic/man2html/5/version
@@ -125,6 +157,10 @@ type TVersion struct {
 	version string
 }
 
+func (r *TVersion) Type() Type {
+	return Tversion
+}
+
 // http://9p.io/magic/man2html/5/version
 //
 // wire format:
@@ -134,6 +170,10 @@ type RVersion struct {
 	Tag
 	msize   uint32
 	version string
+}
+
+func (r *RVersion) Type() Type {
+	return Rversion
 }
 
 // http://9p.io/magic/man2html/5/flush
@@ -146,6 +186,10 @@ type TFlush struct {
 	Oldtag Tag
 }
 
+func (r *TFlush) Type() Type {
+	return Tflush
+}
+
 // http://9p.io/magic/man2html/5/flush
 //
 // wire format:
@@ -153,6 +197,10 @@ type TFlush struct {
 //	size[4] Rflush tag[2]
 type RFlush struct {
 	Tag
+}
+
+func (r *RFlush) Type() Type {
+	return Rflush
 }
 
 // http://9p.io/magic/man2html/5/walk
@@ -167,6 +215,10 @@ type TWalk struct {
 	wnames []string
 }
 
+func (r *TWalk) Type() Type {
+	return Twalk
+}
+
 // http://9p.io/magic/man2html/5/walk
 //
 // wire format:
@@ -175,6 +227,10 @@ type TWalk struct {
 type RWalk struct {
 	Tag
 	Wqids []Qid
+}
+
+func (r *RWalk) Type() Type {
+	return Rwalk
 }
 
 // http://9p.io/magic/man2html/5/read
@@ -189,6 +245,10 @@ type TRead struct {
 	Count  uint32
 }
 
+func (r *TRead) Type() Type {
+	return Tread
+}
+
 // http://9p.io/magic/man2html/5/read
 //
 // wire format:
@@ -197,6 +257,10 @@ type TRead struct {
 type RRead struct {
 	Tag
 	Data []byte
+}
+
+func (r *RRead) Type() Type {
+	return Rread
 }
 
 // http://9p.io/magic/man2html/5/read
@@ -211,6 +275,10 @@ type TWrite struct {
 	Data   []byte
 }
 
+func (r *TWrite) Type() Type {
+	return Twrite
+}
+
 // http://9p.io/magic/man2html/5/read
 //
 // wire_format:
@@ -219,6 +287,10 @@ type TWrite struct {
 type RWrite struct {
 	Tag
 	Count uint32
+}
+
+func (r *RWrite) Type() Type {
+	return Rwrite
 }
 
 type Mode uint8

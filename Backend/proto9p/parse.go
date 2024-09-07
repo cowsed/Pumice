@@ -41,6 +41,8 @@ func ParseFCall(r io.Reader) (FCall, error) {
 		return (&TAuth{}).fillFrom(packet_reader)
 	case Rauth:
 		return (&RAuth{}).fillFrom(packet_reader)
+	case Rerror:
+		return (&RError{}).fillFrom(packet_reader)
 
 	case Tflush:
 		return (&TFlush{}).fillFrom(packet_reader)
@@ -62,6 +64,19 @@ func ParseFCall(r io.Reader) (FCall, error) {
 		return nil, fmt.Errorf("got %d: %w", pt8, ErrUnknownType)
 	}
 
+}
+
+func (t *RError) fillFrom(r TypedReader) (FCall, error) {
+	var err error
+	t.Tag, err = r.ReadTag()
+	if err != nil {
+		return nil, err
+	}
+	t.ename, err = r.ReadString()
+	if err != nil {
+		return nil, err
+	}
+	return t, nil
 }
 
 func (tv *TAuth) fillFrom(r TypedReader) (FCall, error) {

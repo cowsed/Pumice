@@ -24,10 +24,27 @@ func RoundTripFCall(t *testing.T, fc FCall) {
 		t.Fatalf("Failed to parse %T (%+v): %v", fc, fc, err)
 	}
 
+	if fc.Type() != fc2.Type() {
+		t.Fatalf("Wrong type of fcall. Wanted %v, got %v", fc.Type(), fc2.Type())
+	}
+
 	if !reflect.DeepEqual(fc, fc2) {
 		t.Fatalf("Value did not survive round trip. Wanted %v of type %T, got %v of type %T", fc, fc, fc2, fc2)
 	}
 
+}
+
+func FuzzRoundTripRError(f *testing.F) {
+	f.Add(uint16(1), "")
+	f.Add(uint16(1), "broken")
+	f.Add(uint16(0), strings.Repeat("uh oh ", 60))
+	f.Fuzz(func(t *testing.T, tag uint16, ename string) {
+		RoundTripFCall(t, &RError{
+			Tag:   Tag(tag),
+			ename: ename,
+		})
+
+	})
 }
 
 func FuzzRoundTripTVersion(f *testing.F) {
