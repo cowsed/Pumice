@@ -276,7 +276,7 @@ func (t *RError) fillFrom(r TypedReader) (FCall, error) {
 	if err != nil {
 		return nil, err
 	}
-	t.ename, err = r.ReadString()
+	t.Ename, err = r.ReadString()
 	if err != nil {
 		return nil, err
 	}
@@ -329,20 +329,20 @@ func (tv *TAttach) fillFrom(r TypedReader) (FCall, error) {
 	if err != nil {
 		return nil, err
 	}
-	tv.afid, err = r.ReadFid()
-	if err != nil {
-		return nil, err
-	}
-	tv.aname, err = r.ReadString()
+	tv.Afid, err = r.ReadFid()
 	if err != nil {
 		return nil, err
 	}
 
-	tv.uname, err = r.ReadString()
+	tv.Uname, err = r.ReadString()
 	if err != nil {
 		return nil, err
 	}
 
+	tv.Aname, err = r.ReadString()
+	if err != nil {
+		return nil, err
+	}
 	return tv, nil
 }
 
@@ -513,11 +513,11 @@ func (tv *TVersion) fillFrom(r TypedReader) (FCall, error) {
 		return nil, err
 	}
 
-	tv.msize, err = r.Read32()
+	tv.MSize, err = r.Read32()
 	if err != nil {
 		return nil, err
 	}
-	tv.version, err = r.ReadString()
+	tv.Version, err = r.ReadString()
 	return tv, err
 }
 
@@ -528,10 +528,10 @@ func (tv *RVersion) fillFrom(r TypedReader) (FCall, error) {
 		return nil, err
 	}
 
-	tv.msize, err = r.Read32()
+	tv.Msize, err = r.Read32()
 	if err != nil {
 		return nil, err
 	}
-	tv.version, err = r.ReadString()
+	tv.Version, err = r.ReadString()
 	return tv, err
 }

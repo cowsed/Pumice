@@ -212,7 +212,7 @@ func (tv *RError) writeTo(tw TypedWriter) error {
 	if err != nil {
 		return err
 	}
-	err = tw.WriteString(tv.ename)
+	err = tw.WriteString(tv.Ename)
 	if err != nil {
 		return err
 	}
@@ -272,15 +272,15 @@ func (tv *TAttach) writeTo(tw TypedWriter) error {
 	if err != nil {
 		return err
 	}
-	err = tw.WriteFid(tv.afid)
+	err = tw.WriteFid(tv.Afid)
 	if err != nil {
 		return err
 	}
-	err = tw.WriteString(tv.uname)
+	err = tw.WriteString(tv.Uname)
 	if err != nil {
 		return err
 	}
-	err = tw.WriteString(tv.aname)
+	err = tw.WriteString(tv.Aname)
 	if err != nil {
 		return err
 	}
@@ -311,11 +311,11 @@ func (tv *TVersion) writeTo(tw TypedWriter) error {
 	if err != nil {
 		return err
 	}
-	err = tw.Write32(tv.msize)
+	err = tw.Write32(tv.MSize)
 	if err != nil {
 		return err
 	}
-	err = tw.WriteString(tv.version)
+	err = tw.WriteString(tv.Version)
 	if err != nil {
 		return err
 	}
@@ -331,11 +331,11 @@ func (tv *RVersion) writeTo(tw TypedWriter) error {
 	if err != nil {
 		return err
 	}
-	err = tw.Write32(tv.msize)
+	err = tw.Write32(tv.Msize)
 	if err != nil {
 		return err
 	}
-	err = tw.WriteString(tv.version)
+	err = tw.WriteString(tv.Version)
 	if err != nil {
 		return err
 	}

@@ -8,6 +8,7 @@ import (
 	"time"
 )
 
+// writes an FCall to the wire format (including 4 bytes of size at the front)
 func WriteFCall(fc FCall) ([]byte, error) {
 	var tw = TypedWriter{
 		ReadWriter: &bytes.Buffer{},
@@ -16,7 +17,7 @@ func WriteFCall(fc FCall) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return io.ReadAll(tw.ReadWriter)
+	return tw.Finish(), nil
 }
 
 type TypedReader struct {
@@ -26,10 +27,11 @@ type TypedReader struct {
 func (tr *TypedReader) ReadQid() (Qid, error) {
 	var q Qid
 	var err error
-	q.Qtype, err = tr.Read8()
+	qt8, err := tr.Read8()
 	if err != nil {
 		return q, err
 	}
+	q.Qtype = QType(qt8)
 	q.Vers, err = tr.Read32()
 	if err != nil {
 		return q, err
@@ -192,7 +194,7 @@ func (tw *TypedWriter) Finish() []byte {
 
 func (tw *TypedWriter) WriteQid(q Qid) error {
 	// type[1] version[4] path[8]
-	err := tw.Write8(q.Qtype)
+	err := tw.Write8(uint8(q.Qtype))
 	if err != nil {
 		return err
 	}

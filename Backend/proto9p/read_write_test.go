@@ -50,7 +50,7 @@ func FuzzQidEncoding(f *testing.F) {
 
 	f.Fuzz(func(t *testing.T, qtype uint8, vers uint32, uid uint64) {
 		var qin = Qid{
-			Qtype: qtype,
+			Qtype: QType(qtype),
 			Vers:  vers,
 			Uid:   uid,
 		}

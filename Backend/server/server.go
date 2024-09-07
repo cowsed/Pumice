@@ -16,6 +16,8 @@ func NewErrServerRMessage(fc proto9p.FCall) error {
 }
 
 type Conn interface {
+	Username() string
+	SetUsername(string)
 }
 
 type Server interface {
@@ -40,7 +42,7 @@ func writeToWire(w io.Writer, toWire chan proto9p.FCall, wg *sync.WaitGroup) {
 	defer close(toWire)
 
 	for call := range toWire {
-		slog.Debug("Writing fcall", "fcall", call)
+		slog.Debug("Writing fcall to wire", "fcall", call)
 
 		bs, err := proto9p.WriteFCall(call)
 		if err != nil {
@@ -60,14 +62,16 @@ func writeToWire(w io.Writer, toWire chan proto9p.FCall, wg *sync.WaitGroup) {
 }
 
 func takeCalls(fromWire, toWire chan proto9p.FCall, server Server, conn Conn, wg *sync.WaitGroup) {
-	defer close(toWire)
+
 	defer wg.Done()
 
 	for call := range fromWire {
 		call, err := handleFCall(call, server, conn)
 		if err != nil {
 			slog.Error("Error handling fcall", "err", err)
+			continue
 		}
+		slog.Debug("Received from wire", "fcall", call)
 		toWire <- call
 	}
 
@@ -96,7 +100,7 @@ func Serve(r io.Reader, w io.Writer, server Server) error {
 			slog.Error("Reading fcall", "err", err)
 			return err
 		}
-		slog.Debug("read call", "call", call)
+		slog.Debug("read call", "type", call.Type(), "call", call.String())
 		readChan <- call
 	}
 

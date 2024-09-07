@@ -42,7 +42,7 @@ func FuzzRoundTripRError(f *testing.F) {
 	f.Fuzz(func(t *testing.T, tag uint16, ename string) {
 		RoundTripFCall(t, &RError{
 			Tag:   Tag(tag),
-			ename: ename,
+			Ename: ename,
 		})
 
 	})
@@ -104,7 +104,7 @@ func FuzzRoundTripRStat(f *testing.F) {
 				type_: type_,
 				dev:   dev,
 				qid: Qid{
-					Qtype: qidT,
+					Qtype: QType(qidT),
 					Vers:  qidV,
 					Uid:   qidU,
 				},
@@ -132,7 +132,7 @@ func FuzzRoundTripWTStat(f *testing.F) {
 				type_: type_,
 				dev:   dev,
 				qid: Qid{
-					Qtype: qidT,
+					Qtype: QType(qidT),
 					Vers:  qidV,
 					Uid:   qidU,
 				},
@@ -185,7 +185,7 @@ func FuzzRoundTripRCreate(f *testing.F) {
 		RoundTripFCall(t, &RCreate{
 			Tag: Tag(tag),
 			Qid: Qid{
-				Qtype: qT,
+				Qtype: QType(qT),
 				Vers:  qV,
 				Uid:   qU,
 			},
@@ -212,7 +212,7 @@ func FuzzRoundTripRopen(f *testing.F) {
 		RoundTripFCall(t, &ROpen{
 			Tag: Tag(tag),
 			Qid: Qid{
-				Qtype: qT,
+				Qtype: QType(qT),
 				Vers:  qV,
 				Uid:   qU,
 			},
@@ -229,8 +229,8 @@ func FuzzRoundTripTVersion(f *testing.F) {
 	f.Fuzz(func(t *testing.T, a uint16, b uint32, c string) {
 		RoundTripFCall(t, &TVersion{
 			Tag:     Tag(a),
-			msize:   b,
-			version: c,
+			MSize:   b,
+			Version: c,
 		})
 
 	})
@@ -241,8 +241,8 @@ func FuzzRoundTripRVersion(f *testing.F) {
 	f.Fuzz(func(t *testing.T, a uint16, b uint32, c string) {
 		RoundTripFCall(t, &RVersion{
 			Tag:     Tag(a),
-			msize:   b,
-			version: c,
+			Msize:   b,
+			Version: c,
 		})
 	})
 }
@@ -330,7 +330,7 @@ func FuzzRoundTripRWalk(f *testing.F) {
 	f.Fuzz(func(t *testing.T, a uint16, extra []byte) {
 		qids := make([]Qid, len(extra)/3)
 		for i := 0; i < len(extra)/(13); i++ {
-			qids[i].Qtype = extra[i*13]
+			qids[i].Qtype = QType(extra[i*13])
 			qids[i].Vers = binary.LittleEndian.Uint32(extra[i*13+1:])
 			qids[i].Uid = binary.LittleEndian.Uint64(extra[i*13+5:])
 
@@ -363,7 +363,7 @@ func FuzzRoundTripRAuth(f *testing.F) {
 		RoundTripFCall(t, &RAuth{
 			Tag: Tag(tag),
 			aqid: Qid{
-				Qtype: qidT,
+				Qtype: QType(qidT),
 				Vers:  qidVers,
 				Uid:   qidUid,
 			},

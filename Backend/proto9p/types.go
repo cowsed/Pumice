@@ -59,6 +59,7 @@ func (s Stat) String() string {
 }
 
 const NOTAG Tag = 0
+const NOFID Fid = Fid(^uint32(0))
 
 var (
 	_ FCall = &TVersion{}
@@ -381,7 +382,7 @@ func (t *ROpen) Type() Type {
 //	size[4] Rerror tag[2] ename[s]
 type RError struct {
 	Tag
-	ename string
+	Ename string
 }
 
 func (r *RError) Type() Type {
@@ -426,16 +427,16 @@ func (r *RAuth) Type() Type {
 type TAttach struct {
 	Tag
 	Fid
-	afid  Fid
-	uname string
-	aname string
+	Afid  Fid
+	Uname string
+	Aname string
 }
 
 func (r *TAttach) Type() Type {
 	return Tattach
 }
 func (r *TAttach) String() string {
-	return fmt.Sprintf("%v tag%v fid:%v afid:%v uname:%s aname:%s", r.Type(), r.Tag, r.Fid, r.afid, r.uname, r.aname)
+	return fmt.Sprintf("%v tag%v fid:%v afid:%v uname:%s aname:%s", r.Type(), r.Tag, r.Fid, r.Afid, r.Uname, r.Aname)
 }
 
 // http://9p.io/magic/man2html/5/attach
@@ -459,8 +460,8 @@ func (r *RAttach) Type() Type {
 //	size[4] Tversion tag[2] msize[4] version[s]
 type TVersion struct {
 	Tag
-	msize   uint32
-	version string
+	MSize   uint32
+	Version string
 }
 
 func (r *TVersion) Type() Type {
@@ -474,8 +475,8 @@ func (r *TVersion) Type() Type {
 //	size[4] Rversion tag[2] msize[4] version[s]
 type RVersion struct {
 	Tag
-	msize   uint32
-	version string
+	Msize   uint32
+	Version string
 }
 
 func (r *RVersion) Type() Type {
@@ -622,8 +623,11 @@ const (
 	Orclose Mode = 0x40
 )
 
+type QType uint8
+
+// https://9fans.github.io/plan9port/man/man9/intro.html
 type Qid struct {
-	Qtype uint8
+	Qtype QType
 	Vers  uint32
 	Uid   uint64
 }
