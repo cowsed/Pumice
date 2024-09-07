@@ -27,6 +27,7 @@ type FCall interface {
 type Type uint8
 type Tag uint16
 type Fid uint32
+type Stat uint32
 
 const NOTAG Tag = 0
 
@@ -52,6 +53,10 @@ var (
 	_ FCall = &RClunk{}
 	_ FCall = &TRemove{}
 	_ FCall = &RRemove{}
+	_ FCall = &TStat{}
+	_ FCall = &RStat{}
+	_ FCall = &TWStat{}
+	_ FCall = &RWStat{}
 )
 
 const (
@@ -84,6 +89,62 @@ const (
 	Twstat   Type = 126
 	Rwstat   Type = 127
 )
+
+// http://9p.io/magic/man2html/5/stat
+//
+// wire format:
+//
+//	size[4] Tstat tag[2] fid[4]
+type TStat struct {
+	Tag
+	Fid
+}
+
+func (ts *TStat) Type() Type {
+	return Tstat
+}
+
+// http://9p.io/magic/man2html/5/stat
+//
+// wire format:
+//
+//	size[4] Rstat tag[2] stat[n]
+type RStat struct {
+	Tag
+	Stat
+}
+
+func (ts *RStat) Type() Type {
+	return Rstat
+}
+
+// http://9p.io/magic/man2html/5/stat
+//
+// wire format:
+//
+//	size[4] Twstat tag[2] fid[4] stat[n]
+type TWStat struct {
+	Tag
+	Fid
+	Stat
+}
+
+func (ts *TWStat) Type() Type {
+	return Twstat
+}
+
+// http://9p.io/magic/man2html/5/stat
+//
+// wire format:
+//
+//	size[4] Rwstat tag[2]
+type RWStat struct {
+	Tag
+}
+
+func (ts *RWStat) Type() Type {
+	return Rwstat
+}
 
 // http://9p.io/magic/man2html/5/clunk
 //

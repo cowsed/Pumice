@@ -83,6 +83,50 @@ func FuzzRoundTripTRemove(f *testing.F) {
 	})
 }
 
+func FuzzRoundTripTStat(f *testing.F) {
+	f.Add(uint16(1), uint32(1))
+	f.Fuzz(func(t *testing.T, tag uint16, fid uint32) {
+		RoundTripFCall(t, &TStat{
+			Tag: Tag(tag),
+			Fid: Fid(fid),
+		})
+
+	})
+}
+
+func FuzzRoundTripRStat(f *testing.F) {
+	f.Add(uint16(1), uint32(1))
+	f.Fuzz(func(t *testing.T, tag uint16, stat uint32) {
+		RoundTripFCall(t, &RStat{
+			Tag:  Tag(tag),
+			Stat: Stat(stat),
+		})
+
+	})
+}
+
+func FuzzRoundTripWTStat(f *testing.F) {
+	f.Add(uint16(1), uint32(1), uint32(1))
+	f.Fuzz(func(t *testing.T, tag uint16, fid uint32, stat uint32) {
+		RoundTripFCall(t, &TWStat{
+			Tag:  Tag(tag),
+			Fid:  Fid(fid),
+			Stat: Stat(stat),
+		})
+
+	})
+}
+
+func FuzzRoundTripRWStat(f *testing.F) {
+	f.Add(uint16(1))
+	f.Fuzz(func(t *testing.T, tag uint16) {
+		RoundTripFCall(t, &RWStat{
+			Tag: Tag(tag),
+		})
+
+	})
+}
+
 func FuzzRoundTripRClunk(f *testing.F) {
 	f.Add(uint16(1))
 	f.Fuzz(func(t *testing.T, tag uint16) {

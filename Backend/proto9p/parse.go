@@ -77,10 +77,71 @@ func ParseFCall(r io.Reader) (FCall, error) {
 	case Rremove:
 		return (&RRemove{}).fillFrom(packet_reader)
 
+	case Tstat:
+		return (&TStat{}).fillFrom(packet_reader)
+	case Rstat:
+		return (&RStat{}).fillFrom(packet_reader)
+	case Twstat:
+		return (&TWStat{}).fillFrom(packet_reader)
+	case Rwstat:
+		return (&RWStat{}).fillFrom(packet_reader)
 	default:
 		return nil, fmt.Errorf("got %d: %w", pt8, ErrUnknownType)
 	}
 
+}
+
+func (t *TStat) fillFrom(r TypedReader) (FCall, error) {
+	var err error
+	t.Tag, err = r.ReadTag()
+	if err != nil {
+		return nil, err
+	}
+	t.Fid, err = r.ReadFid()
+	if err != nil {
+		return nil, err
+	}
+	return t, nil
+}
+func (t *RStat) fillFrom(r TypedReader) (FCall, error) {
+	var err error
+	t.Tag, err = r.ReadTag()
+	if err != nil {
+		return nil, err
+	}
+	st, err := r.Read32()
+	t.Stat = Stat(st)
+	if err != nil {
+		return nil, err
+	}
+	return t, nil
+}
+
+func (t *TWStat) fillFrom(r TypedReader) (FCall, error) {
+	var err error
+	t.Tag, err = r.ReadTag()
+	if err != nil {
+		return nil, err
+	}
+	t.Fid, err = r.ReadFid()
+	if err != nil {
+		return nil, err
+	}
+	st, err := r.Read32()
+	t.Stat = Stat(st)
+	if err != nil {
+		return nil, err
+	}
+
+	return t, nil
+}
+func (t *RWStat) fillFrom(r TypedReader) (FCall, error) {
+	var err error
+	t.Tag, err = r.ReadTag()
+	if err != nil {
+		return nil, err
+	}
+	return t, nil
 }
 
 func (t *TClunk) fillFrom(r TypedReader) (FCall, error) {

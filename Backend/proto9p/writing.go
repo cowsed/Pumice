@@ -1,5 +1,66 @@
 package proto9p
 
+func (tv *TStat) writeTo(tw TypedWriter) error {
+	err := tw.WriteType(Tstat)
+	if err != nil {
+		return err
+	}
+	err = tw.WriteTag(tv.Tag)
+	if err != nil {
+		return err
+	}
+	err = tw.WriteFid(tv.Fid)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func (tv *RStat) writeTo(tw TypedWriter) error {
+	err := tw.WriteType(Rstat)
+	if err != nil {
+		return err
+	}
+	err = tw.WriteTag(tv.Tag)
+	if err != nil {
+		return err
+	}
+	err = tw.Write32(uint32(tv.Stat))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func (tv *TWStat) writeTo(tw TypedWriter) error {
+	err := tw.WriteType(Twstat)
+	if err != nil {
+		return err
+	}
+	err = tw.WriteTag(tv.Tag)
+	if err != nil {
+		return err
+	}
+	err = tw.WriteFid(tv.Fid)
+	if err != nil {
+		return err
+	}
+	err = tw.Write32(uint32(tv.Stat))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func (tv *RWStat) writeTo(tw TypedWriter) error {
+	err := tw.WriteType(Rwstat)
+	if err != nil {
+		return err
+	}
+	err = tw.WriteTag(tv.Tag)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (tv *TClunk) writeTo(tw TypedWriter) error {
 	err := tw.WriteType(Tclunk)
 	if err != nil {
