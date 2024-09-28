@@ -8,6 +8,13 @@ import (
 type OSPath string
 type VaultLocation string
 
+func (v VaultLocation) Name() VaultLocation {
+	return VaultLocation(path.Base(string(v)))
+}
+func (v VaultLocation) Dir() VaultLocation {
+	return VaultLocation(path.Dir(string(v)))
+}
+
 func ToOSPath(vault OSPath, loc VaultLocation) string {
 	return path.Join(string(vault), string(loc))
 }
@@ -35,6 +42,14 @@ func (ts TagSet) List() []Tag {
 		keys = append(keys, k)
 	}
 	return keys
+}
+func (ts TagSet) StringList() []string {
+	l := ts.List()
+	s := make([]string, len(l))
+	for i, t := range l {
+		s[i] = t.String()
+	}
+	return s
 }
 
 func (ts TagSet) Contains(t Tag) bool {

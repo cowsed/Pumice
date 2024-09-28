@@ -3,3 +3,4 @@ App/TestVault/.config
 App/TestVault/.cache
 App/App
 Backend/proto9p/fuzzall.sh
+Mount/

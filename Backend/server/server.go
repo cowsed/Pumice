@@ -18,6 +18,7 @@ func NewErrServerRMessage(fc proto9p.FCall) error {
 type Conn interface {
 	Username() string
 	SetUsername(string)
+	FidInUse(f proto9p.Fid) bool
 }
 
 type Server interface {

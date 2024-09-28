@@ -518,15 +518,15 @@ func (r *RFlush) Type() Type {
 type TWalk struct {
 	Tag
 	Fid
-	newFid Fid
-	wnames []string
+	NewFid Fid
+	WNames []string
 }
 
 func (r *TWalk) Type() Type {
 	return Twalk
 }
 func (ts *TWalk) String() string {
-	return fmt.Sprintf("%v tag:%v fid:%v newFid:%v wnames:%v", ts.Type(), ts.Tag, ts.Fid, ts.newFid, ts.wnames)
+	return fmt.Sprintf("%v tag:%v fid:%v newFid:%v wnames:%v", ts.Type(), ts.Tag, ts.Fid, ts.NewFid, ts.WNames)
 }
 
 // http://9p.io/magic/man2html/5/walk

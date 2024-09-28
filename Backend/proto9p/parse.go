@@ -449,7 +449,7 @@ func (tv *TWalk) fillFrom(r TypedReader) (FCall, error) {
 	if err != nil {
 		return nil, err
 	}
-	tv.newFid, err = r.ReadFid()
+	tv.NewFid, err = r.ReadFid()
 	if err != nil {
 		return nil, err
 	}
@@ -457,9 +457,9 @@ func (tv *TWalk) fillFrom(r TypedReader) (FCall, error) {
 	if err != nil {
 		return nil, err
 	}
-	tv.wnames = make([]string, numWname)
+	tv.WNames = make([]string, numWname)
 	for i := 0; i < int(numWname); i++ {
-		tv.wnames[i], err = r.ReadString()
+		tv.WNames[i], err = r.ReadString()
 		if err != nil {
 			return nil, err
 		}

@@ -18,7 +18,7 @@ type VaultCache struct {
 type NoteCache struct {
 	Path     VaultLocation
 	Tags     TagSet
-	Outlinks Link
+	Outlinks []VaultLocation
 	Metadata map[string]MetaDataValue
 }
 
@@ -91,7 +91,7 @@ func MakeNoteCache(path VaultLocation, bytes []byte) (cache NoteCache, doc ast.N
 	cache = NoteCache{
 		Path:     path,
 		Tags:     GetTags(doc),
-		Outlinks: "",
+		Outlinks: []VaultLocation{},
 		Metadata: meta,
 	}
 
@@ -104,3 +104,7 @@ type MetaDataValue interface{}
 
 type Link string
 type Tag string
+
+func (t Tag) String() string {
+	return string(t)
+}

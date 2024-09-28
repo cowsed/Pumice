@@ -385,16 +385,16 @@ func (tv *TWalk) writeTo(tw TypedWriter) error {
 		return err
 	}
 
-	err = tw.WriteFid(tv.newFid)
+	err = tw.WriteFid(tv.NewFid)
 	if err != nil {
 		return err
 	}
 
-	err = tw.Write16(uint16(len(tv.wnames)))
+	err = tw.Write16(uint16(len(tv.WNames)))
 	if err != nil {
 		return err
 	}
-	for _, wname := range tv.wnames {
+	for _, wname := range tv.WNames {
 		err = tw.WriteString(wname)
 		if err != nil {
 			return err

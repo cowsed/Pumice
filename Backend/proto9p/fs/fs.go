@@ -5,6 +5,7 @@ import (
 	"PumiceBackend/server"
 	"errors"
 	"fmt"
+	"log"
 	"log/slog"
 	"os"
 	"path"
@@ -37,6 +38,7 @@ type ClientEntry struct {
 }
 type conn struct {
 	uname string
+	fids  map[proto9p.Fid]FidEntry
 }
 
 func (conn *conn) SetUsername(s string) {
@@ -44,6 +46,11 @@ func (conn *conn) SetUsername(s string) {
 }
 func (conn *conn) Username() string {
 	return conn.uname
+}
+
+func (conn *conn) FidInUse(f proto9p.Fid) bool {
+	_, exists := conn.fids[f]
+	return exists
 }
 
 var _ server.Conn = &conn{}
@@ -138,7 +145,6 @@ func (f *FS) Flush(server.Conn, *proto9p.TFlush) (proto9p.FCall, error) {
 	panic("unimplemented")
 }
 
-// NewConnection implements server.Server.
 func (f *FS) NewConnection() server.Conn {
 	return &conn{
 		uname: "",
@@ -186,8 +192,12 @@ func (f *FS) Version(c server.Conn, vers *proto9p.TVersion) (proto9p.FCall, erro
 	}, nil
 }
 
-// Walk implements server.Server.
-func (f *FS) Walk(server.Conn, *proto9p.TWalk) (proto9p.FCall, error) {
+// https://9p.io/magic/man2html/5/walk
+func (f *FS) Walk(c server.Conn, p *proto9p.TWalk) (proto9p.FCall, error) {
+	if p.Fid != p.NewFid && c.FidInUse(p.Fid) {
+		return &proto9p.RError{Tag: p.Tag, Ename: fmt.Sprintf("fid %v already in use", p.NewFid)}, nil
+	}
+	log.Println("wnames: ", p.WNames)
 	panic("unimplemented")
 }
 

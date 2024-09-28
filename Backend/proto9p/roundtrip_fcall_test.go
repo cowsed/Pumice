@@ -319,8 +319,8 @@ func FuzzRoundTripTWalk(f *testing.F) {
 		RoundTripFCall(t, &TWalk{
 			Tag:    Tag(a),
 			Fid:    Fid(b),
-			newFid: Fid(c),
-			wnames: strings.Split(extra, split),
+			NewFid: Fid(c),
+			WNames: strings.Split(extra, split),
 		})
 
 	})
