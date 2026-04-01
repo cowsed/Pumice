@@ -1,13 +1,16 @@
 package data
 
 import (
+	"crypto/md5"
 	"fmt"
 
 	"github.com/cowsed/Pumice/App/config"
 	"github.com/cowsed/Pumice/App/parser"
+	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/yuin/goldmark/ast"
 	"github.com/yuin/goldmark/text"
 	"go.abhg.dev/goldmark/hashtag"
+	"go.abhg.dev/goldmark/wikilink"
 )
 
 type VaultCache struct {
@@ -20,6 +23,11 @@ type NoteCache struct {
 	Tags     TagSet
 	Outlinks []VaultLocation
 	Metadata map[string]MetaDataValue
+	Md5sum   [16]byte
+}
+
+func (nc NoteCache) Title() string {
+	return string(nc.Path.Name())
 }
 
 type FullPath struct {
@@ -29,6 +37,24 @@ type FullPath struct {
 
 func (fp FullPath) ToPath() string {
 	return ToOSPath(fp.vaultLocation, fp.notePath)
+}
+
+func GetOutlinks(doc ast.Node, source []byte) []string {
+	var outs = mapset.NewSet[string]()
+	ast.Walk(doc, func(node ast.Node, enter bool) (ast.WalkStatus, error) {
+		var linkSource = ""
+		if n, ok := node.(*ast.Link); ok && enter {
+			linkSource = string(n.Destination)
+		} else if n, ok := node.(*wikilink.Node); ok && enter {
+			linkSource = string(n.Target)
+		}
+		if linkSource != "" {
+			outs.Add(linkSource)
+		}
+
+		return ast.WalkContinue, nil
+	})
+	return outs.ToSlice()
 }
 
 func GetTags(doc ast.Node) TagSet {
@@ -88,11 +114,20 @@ func MakeNoteCache(path VaultLocation, bytes []byte) (cache NoteCache, doc ast.N
 		meta[k] = v
 	}
 
+	unresolvedOutlinks := GetOutlinks(doc, bytes)
+	resolvedOutlinks := make([]VaultLocation, len(unresolvedOutlinks))
+	for i, unresolved := range unresolvedOutlinks {
+		resolvedOutlinks[i] = VaultLocation(unresolved)
+	}
+
+	// log.Println("outlinks", outlinks)
+
 	cache = NoteCache{
 		Path:     path,
 		Tags:     GetTags(doc),
-		Outlinks: []VaultLocation{},
+		Outlinks: resolvedOutlinks,
 		Metadata: meta,
+		Md5sum:   md5.Sum(bytes),
 	}
 
 	// List the tags.
